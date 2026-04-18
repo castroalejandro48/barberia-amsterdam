@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Barbería Ámsterdam CR — Escazú</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Montserrat:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #080808;
+  --deep: #0f0f0f;
+  --card: #141414;
+  --border: #222222;
+  --border-light: #2e2e2e;
+  --gold: #C9A84C;
+  --gold-light: #E2C97E;
+  --gold-dim: rgba(201,168,76,0.12);
+  --gold-glow: rgba(201,168,76,0.06);
+  --white: #F5F0E8;
+  --white-dim: rgba(245,240,232,0.55);
+  --white-faint: rgba(245,240,232,0.07);
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ── CUSTOM CURSOR ── */
+.cursor {
+  width: 8px; height: 8px;
+  background: var(--gold);
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  z-index: 99999;
+  transition: transform 0.15s ease;
+  transform: translate(-50%, -50%);
+}
+.cursor-ring {
+  width: 28px; height: 28px;
+  border: 1px solid rgba(201,168,76,0.4);
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  z-index: 99998;
+  transition: all 0.12s ease;
+  transform: translate(-50%, -50%);
+}
+
+/* ── GRAIN ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 1000;
+  padding: 24px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.4s ease;
+}
+nav.scrolled {
+  background: rgba(8,8,8,0.95);
+  backdrop-filter: blur(20px);
+  padding: 16px 48px;
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 300;
+  letter-spacing: 2px;
+  color: var(--white);
+  text-decoration: none;
+}
+.nav-logo em { font-style: italic; color: var(--gold); }
+.nav-links {
+  display: flex;
+  gap: 40px;
+  list-style: none;
+}
+.nav-links a {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--white-dim);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--gold); }
+.nav-cta {
+  background: var(--gold);
+  color: var(--black) !important;
+  padding: 10px 24px;
+  font-weight: 600 !important;
+  letter-spacing: 3px;
+  border-radius: 1px;
+  transition: background 0.2s !important;
+}
+.nav-cta:hover { background: var(--gold-light) !important; color: var(--black) !important; }
+
+/* mobile nav */
+.nav-hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+  padding: 4px;
+}
+.nav-hamburger span {
+  display: block;
+  width: 24px; height: 1px;
+  background: var(--white);
+  transition: all 0.3s;
+}
+.mobile-menu {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--black);
+  z-index: 999;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+}
+.mobile-menu.open { display: flex; }
+.mobile-menu a {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 36px;
+  font-weight: 300;
+  color: var(--white);
+  text-decoration: none;
+  letter-spacing: 2px;
+  transition: color 0.2s;
+}
+.mobile-menu a:hover { color: var(--gold); }
+.mobile-close {
+  position: absolute;
+  top: 28px; right: 28px;
+  font-size: 28px;
+  color: var(--white-dim);
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 0 24px;
+}
+.hero-img {
+  position: absolute; inset: 0;
+  background-image: url('https://images.pexels.com/photos/1813272/pexels-photo-1813272.jpeg?auto=compress&cs=tinysrgb&w=1800');
+  background-size: cover;
+  background-position: center 30%;
+  transform: scale(1.05);
+  transition: transform 8s ease;
+}
+.hero-img.loaded { transform: scale(1); }
+.hero-bg {
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(8,8,8,0.72) 0%,
+    rgba(8,8,8,0.55) 40%,
+    rgba(8,8,8,0.75) 80%,
+    rgba(8,8,8,0.97) 100%
+  );
+  z-index: 1;
+}
+.hero-lines {
+  position: absolute; inset: 0;
+  z-index: 2;
+  background-image:
+    linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black, transparent);
+}
+.hero-content {
+  text-align: center;
+  position: relative;
+  z-index: 3;
+  max-width: 800px;
+}
+.hero-eyebrow {
+  font-size: 10px;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 24px;
+  opacity: 0;
+  animation: fadeUp 0.8s ease 0.2s forwards;
+}
+.hero-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(56px, 10vw, 110px);
+  font-weight: 300;
+  line-height: 0.95;
+  letter-spacing: -1px;
+  margin-bottom: 28px;
+  opacity: 0;
+  animation: fadeUp 0.8s ease 0.4s forwards;
+}
+.hero-title em {
+  font-style: italic;
+  color: var(--gold-light);
+  display: block;
+}
+.hero-sub {
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: var(--white-dim);
+  line-height: 2;
+  margin-bottom: 48px;
+  opacity: 0;
+  animation: fadeUp 0.8s ease 0.6s forwards;
+}
+.hero-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  opacity: 0;
+  animation: fadeUp 0.8s ease 0.8s forwards;
+}
+.btn-gold {
+  background: var(--gold);
+  color: var(--black);
+  border: none;
+  padding: 16px 36px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 1px;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn-gold:hover { background: var(--gold-light); transform: translateY(-1px); }
+.btn-outline {
+  background: none;
+  color: var(--white);
+  border: 1px solid var(--border-light);
+  padding: 16px 36px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 1px;
+  text-decoration: none;
+  display: inline-block;
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+
+.hero-scroll {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  animation: fadeIn 1s ease 1.2s forwards;
+  z-index: 3;
+}
+.hero-scroll span {
+  font-size: 9px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--white-dim);
+}
+.scroll-line {
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(to bottom, var(--gold), transparent);
+  animation: scrollPulse 2s ease infinite;
+}
+@keyframes scrollPulse {
+  0%, 100% { opacity: 0.3; transform: scaleY(1); }
+  50% { opacity: 1; transform: scaleY(1.1); }
+}
+
+/* ── SECTION BASE ── */
+section { padding: 120px 48px; }
+.section-label {
+  font-size: 9px;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+.section-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 300;
+  line-height: 1.1;
+  margin-bottom: 20px;
+}
+.section-title em { font-style: italic; color: var(--gold-light); }
+
+.divider-gold {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 20px 0 48px;
+}
+.divider-gold::before, .divider-gold::after {
+  content: '';
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border-light));
+  flex: 1;
+}
+.divider-gold::before { background: linear-gradient(to left, transparent, var(--border-light)); }
+.diam {
+  width: 6px; height: 6px;
+  background: var(--gold);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+/* ── STRIP NUMBERS ── */
+.strip {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 40px 48px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  text-align: center;
+}
+.strip-item {
+  padding: 20px;
+  border-right: 1px solid var(--border);
+}
+.strip-item:last-child { border-right: none; }
+.strip-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 52px;
+  font-weight: 300;
+  color: var(--gold);
+  line-height: 1;
+  display: block;
+}
+.strip-label {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--white-dim);
+  margin-top: 6px;
+  display: block;
+}
+
+/* ── SERVICES ── */
+#servicios { background: var(--deep); }
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+.service-card {
+  background: var(--deep);
+  padding: 48px 40px;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s;
+}
+.service-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+  transform: scaleX(0);
+  transition: transform 0.4s ease;
+  transform-origin: left;
+}
+.service-card:hover { background: rgba(201,168,76,0.03); }
+.service-card:hover::after { transform: scaleX(1); }
+.service-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  color: var(--gold);
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+  display: block;
+}
+.service-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 32px;
+  font-weight: 300;
+  color: var(--white);
+  margin-bottom: 12px;
+  line-height: 1.1;
+}
+.service-desc {
+  font-size: 12px;
+  color: var(--white-dim);
+  line-height: 2;
+  letter-spacing: 0.5px;
+  margin-bottom: 28px;
+}
+.service-meta {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.service-price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 36px;
+  font-weight: 300;
+  color: var(--gold);
+  line-height: 1;
+}
+.service-duration {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--white-dim);
+}
+
+/* ── TEAM ── */
+#equipo { background: var(--black); }
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2px;
+  max-width: 900px;
+}
+.team-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 48px 40px;
+  position: relative;
+  transition: border-color 0.3s;
+}
+.team-card:hover { border-color: var(--gold); }
+.team-avatar {
+  width: 80px; height: 80px;
+  border: 1px solid var(--gold);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 32px;
+  font-style: italic;
+  color: var(--gold);
+  margin-bottom: 24px;
+  position: relative;
+}
+.team-avatar::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid rgba(201,168,76,0.2);
+}
+.team-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 300;
+  margin-bottom: 6px;
+}
+.team-role {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+.team-bio {
+  font-size: 12px;
+  color: var(--white-dim);
+  line-height: 2;
+}
+
+/* ── BOOKING CTA ── */
+#agendar {
+  background: var(--deep);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+#agendar::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 80% at 50% 50%, rgba(201,168,76,0.05) 0%, transparent 70%);
+}
+.booking-inner { position: relative; z-index: 2; max-width: 600px; margin: 0 auto; }
+.booking-ornament {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 80px;
+  font-style: italic;
+  color: rgba(201,168,76,0.08);
+  line-height: 1;
+  margin-bottom: -20px;
+  user-select: none;
+}
+
+/* ── HORARIO ── */
+#horario { background: var(--black); }
+.schedule-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  max-width: 800px;
+}
+.schedule-item {
+  background: var(--deep);
+  padding: 32px 28px;
+}
+.schedule-day {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--white);
+  margin-bottom: 8px;
+}
+.schedule-hours {
+  font-size: 13px;
+  color: var(--gold);
+  letter-spacing: 1px;
+}
+.schedule-closed {
+  font-size: 11px;
+  color: var(--white-dim);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* ── LOCATION ── */
+#ubicacion { background: var(--deep); }
+.location-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: start;
+  max-width: 1000px;
+}
+.location-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.location-item {}
+.location-item-label {
+  font-size: 9px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+.location-item-val {
+  font-size: 15px;
+  color: var(--white);
+  line-height: 1.8;
+}
+.map-placeholder {
+  background: var(--card);
+  border: 1px solid var(--border);
+  aspect-ratio: 4/3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+}
+.map-placeholder::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(201,168,76,0.04), transparent);
+}
+.map-icon { font-size: 32px; color: var(--gold); opacity: 0.5; }
+.map-text {
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--white-dim);
+}
+.whatsapp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: 1px solid var(--border-light);
+  color: var(--white);
+  padding: 14px 24px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 1px;
+  transition: border-color 0.2s, color 0.2s;
+  margin-top: 8px;
+}
+.whatsapp-btn:hover { border-color: #25D366; color: #25D366; }
+
+/* ── FOOTER ── */
+footer {
+  background: var(--black);
+  border-top: 1px solid var(--border);
+  padding: 60px 48px 40px;
+}
+.footer-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto 40px;
+}
+.footer-brand .logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 300;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+.footer-brand .logo em { font-style: italic; color: var(--gold); }
+.footer-brand p {
+  font-size: 11px;
+  color: var(--white-dim);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.footer-links { display: flex; flex-direction: column; gap: 12px; }
+.footer-links a {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--white-dim);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--gold); }
+.footer-bottom {
+  border-top: 1px solid var(--border);
+  padding-top: 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.footer-copy {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--white-dim);
+  text-transform: uppercase;
+}
+
+/* ── MODAL CITAS ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.92);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(10px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--deep);
+  border: 1px solid var(--border-light);
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: fadeUp 0.3s ease;
+}
+.modal-close {
+  position: absolute;
+  top: 20px; right: 20px;
+  background: none;
+  border: none;
+  color: var(--white-dim);
+  font-size: 20px;
+  cursor: pointer;
+  transition: color 0.2s;
+  z-index: 10;
+}
+.modal-close:hover { color: var(--gold); }
+.modal-header {
+  padding: 40px 36px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-label {
+  font-size: 9px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+.modal-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 30px;
+  font-weight: 300;
+}
+.modal-body { padding: 28px 36px 36px; }
+
+/* ── BOOKING FLOW ── */
+.flow-step { display: none; }
+.flow-step.active { display: block; }
+
+.step-title {
+  font-size: 12px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--white-dim);
+  margin-bottom: 20px;
+}
+.service-option, .barber-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 1px;
+}
+.service-option:hover, .barber-option:hover { border-color: var(--gold); background: var(--gold-dim); }
+.service-option.sel, .barber-option.sel { border-color: var(--gold); background: var(--gold-dim); }
+.opt-name { font-size: 14px; font-weight: 400; }
+.opt-meta { font-size: 11px; color: var(--white-dim); margin-top: 2px; }
+.opt-price { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--gold); }
+.opt-check { color: var(--gold); opacity: 0; transition: opacity 0.2s; font-size: 14px; }
+.service-option.sel .opt-check, .barber-option.sel .opt-check { opacity: 1; }
+
+.cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.cal-month-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; }
+.cal-arrow { background: none; border: 1px solid var(--border); color: var(--white); width: 32px; height: 32px; cursor: pointer; font-size: 14px; transition: border-color 0.2s; }
+.cal-arrow:hover { border-color: var(--gold); color: var(--gold); }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 20px; }
+.cal-lbl { text-align: center; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--white-dim); padding-bottom: 6px; }
+.cal-d { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; border: 1px solid transparent; transition: all 0.15s; border-radius: 1px; }
+.cal-d:hover:not(.dis):not(.emp) { border-color: var(--gold); color: var(--gold); }
+.cal-d.sel { background: var(--gold); color: var(--black); font-weight: 600; }
+.cal-d.dis { color: var(--border-light); cursor: default; }
+.cal-d.emp { cursor: default; }
+.cal-d.tod:not(.sel) { border-color: var(--border-light); }
+
+.time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.t-slot { padding: 11px 4px; border: 1px solid var(--border); text-align: center; font-size: 12px; letter-spacing: 1px; cursor: pointer; transition: all 0.15s; border-radius: 1px; }
+.t-slot:hover:not(.tak) { border-color: var(--gold); color: var(--gold); }
+.t-slot.sel { background: var(--gold); color: var(--black); font-weight: 600; border-color: var(--gold); }
+.t-slot.tak { color: var(--border-light); cursor: default; text-decoration: line-through; font-size: 11px; }
+
+.field { margin-bottom: 16px; }
+.field label { display: block; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+.field input, .field textarea {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1px;
+  padding: 13px 16px;
+  color: var(--white);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.field input:focus, .field textarea:focus { border-color: var(--gold); }
+.field input::placeholder, .field textarea::placeholder { color: var(--white-dim); }
+
+.modal-btn {
+  width: 100%;
+  padding: 15px;
+  background: var(--gold);
+  color: var(--black);
+  border: none;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 1px;
+  transition: background 0.2s;
+  margin-top: 12px;
+}
+.modal-btn:hover { background: var(--gold-light); }
+.modal-btn-ghost {
+  width: 100%;
+  padding: 12px;
+  background: none;
+  color: var(--white-dim);
+  border: 1px solid var(--border);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 1px;
+  transition: all 0.2s;
+  margin-top: 8px;
+}
+.modal-btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+.progress-dots { display: flex; gap: 6px; margin-bottom: 24px; }
+.p-dot { height: 2px; flex: 1; background: var(--border); border-radius: 1px; transition: background 0.3s; }
+.p-dot.done { background: var(--gold); }
+
+.confirm-box {
+  border: 1px solid var(--gold);
+  padding: 28px;
+  text-align: center;
+  margin-bottom: 20px;
+  background: var(--gold-glow);
+}
+.conf-icon { font-size: 28px; margin-bottom: 12px; }
+.conf-title { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 300; color: var(--gold); margin-bottom: 4px; }
+.conf-sub { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--white-dim); margin-bottom: 16px; }
+.conf-details { font-size: 13px; line-height: 2.2; color: var(--white); }
+.conf-details strong { color: var(--gold); font-weight: 500; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ── SCROLL REVEAL ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ── GALLERY STRIP ── */
+.gallery-strip {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-rows: 380px;
+  gap: 3px;
+  overflow: hidden;
+}
+.gallery-item {
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+}
+.gallery-item img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.7s ease;
+  filter: brightness(0.8) saturate(0.85);
+}
+.gallery-item:hover img {
+  transform: scale(1.06);
+  filter: brightness(0.9) saturate(1);
+}
+.gallery-item::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(8,8,8,0.5), transparent 50%);
+  pointer-events: none;
+}
+.gallery-item.tall { grid-row: span 1; }
+
+/* ── TEAM PHOTO ── */
+.team-card-img {
+  width: 100%; height: 220px;
+  overflow: hidden;
+  margin-bottom: 28px;
+  position: relative;
+}
+.team-card-img img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: top;
+  filter: grayscale(20%) brightness(0.85);
+  transition: transform 0.5s ease, filter 0.5s ease;
+}
+.team-card:hover .team-card-img img {
+  transform: scale(1.04);
+  filter: grayscale(0%) brightness(0.95);
+}
+.team-card-img::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 60px;
+  background: linear-gradient(to top, var(--card), transparent);
+  pointer-events: none;
+}
+
+/* ── PARALLAX BANNER ── */
+.parallax-banner {
+  height: 420px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.parallax-banner-img {
+  position: absolute; inset: -60px;
+  background-image: url('https://images.pexels.com/photos/2076930/pexels-photo-2076930.jpeg?auto=compress&cs=tinysrgb&w=1800');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  filter: brightness(0.35) saturate(0.7);
+}
+.parallax-banner-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(8,8,8,0.6), rgba(201,168,76,0.05));
+}
+.parallax-banner-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 0 24px;
+}
+
+/* ── ── */
+
+@media (max-width: 768px) {
+  nav { padding: 20px 24px; }
+  nav.scrolled { padding: 14px 24px; }
+  .nav-links { display: none; }
+  .nav-hamburger { display: flex; }
+  section { padding: 80px 24px; }
+  .strip { grid-template-columns: repeat(2, 1fr); padding: 32px 24px; }
+  .strip-item:nth-child(2) { border-right: none; }
+  .strip-item:nth-child(3) { border-top: 1px solid var(--border); }
+  .location-grid { grid-template-columns: 1fr; gap: 40px; }
+  footer { padding: 48px 24px 32px; }
+  .footer-inner { flex-direction: column; gap: 32px; }
+  .footer-bottom { flex-direction: column; align-items: flex-start; }
+  body { cursor: auto; }
+  .cursor, .cursor-ring { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="#" class="nav-logo"><em>Ámsterdam</em></a>
+  <ul class="nav-links">
+    <li><a href="#servicios">Servicios</a></li>
+    <li><a href="#equipo">Equipo</a></li>
+    <li><a href="#horario">Horario</a></li>
+    <li><a href="#ubicacion">Ubicación</a></li>
+    <li><a href="#" class="nav-cta" onclick="openModal()">Agendar</a></li>
+  </ul>
+  <div class="nav-hamburger" id="hamburger" onclick="toggleMobile()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobile-menu">
+  <button class="mobile-close" onclick="toggleMobile()">✕</button>
+  <a href="#servicios" onclick="toggleMobile()">Servicios</a>
+  <a href="#equipo" onclick="toggleMobile()">Equipo</a>
+  <a href="#horario" onclick="toggleMobile()">Horario</a>
+  <a href="#ubicacion" onclick="toggleMobile()">Ubicación</a>
+  <a href="#" onclick="toggleMobile(); openModal();" style="color:var(--gold)">Agendar Cita</a>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="inicio">
+  <div class="hero-img" id="hero-img"></div>
+  <div class="hero-bg"></div>
+  <div class="hero-lines"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Escazú, Costa Rica · Est. 2024</div>
+    <h1 class="hero-title">
+      Barbería<br><em>Ámsterdam</em>
+    </h1>
+    <p class="hero-sub">
+      Arte, precisión y distinción.<br>
+      Una experiencia diseñada para el caballero moderno.
+    </p>
+    <div class="hero-actions">
+      <a href="#" class="btn-gold" onclick="openModal()">Reservar Cita</a>
+      <a href="#servicios" class="btn-outline">Ver Servicios</a>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- STRIP -->
+<div class="strip reveal">
+  <div class="strip-item">
+    <span class="strip-num">4</span>
+    <span class="strip-label">Servicios</span>
+  </div>
+  <div class="strip-item">
+    <span class="strip-num">2</span>
+    <span class="strip-label">Maestros barberos</span>
+  </div>
+  <div class="strip-item">
+    <span class="strip-num">7</span>
+    <span class="strip-label">Días a la semana</span>
+  </div>
+  <div class="strip-item">
+    <span class="strip-num">100<span style="font-size:28px">%</span></span>
+    <span class="strip-label">Dedicación</span>
+  </div>
+</div>
+
+<!-- GALLERY STRIP -->
+<div class="gallery-strip reveal">
+  <div class="gallery-item">
+    <img src="https://images.pexels.com/photos/1570807/pexels-photo-1570807.jpeg?auto=compress&cs=tinysrgb&w=900" alt="Corte masculino" loading="lazy">
+  </div>
+  <div class="gallery-item">
+    <img src="https://images.pexels.com/photos/2040189/pexels-photo-2040189.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Barba profesional" loading="lazy">
+  </div>
+  <div class="gallery-item">
+    <img src="https://images.pexels.com/photos/3224934/pexels-photo-3224934.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Barbería premium" loading="lazy">
+  </div>
+</div>
+
+<!-- SERVICIOS -->
+<section id="servicios">
+  <div class="reveal">
+    <div class="section-label">Lo que ofrecemos</div>
+    <h2 class="section-title">Nuestros<br><em>Servicios</em></h2>
+    <div class="divider-gold"><div class="diam"></div></div>
+  </div>
+  <div class="services-grid reveal">
+    <div class="service-card">
+      <span class="service-num">01</span>
+      <div class="service-name">Corte Jordaan</div>
+      <p class="service-desc">Corte clásico de precisión con acabado impecable. Incluye lavado y estilizado final.</p>
+      <div class="service-meta">
+        <div class="service-price">₡12,000</div>
+        <div class="service-duration">40 minutos</div>
+      </div>
+    </div>
+    <div class="service-card">
+      <span class="service-num">02</span>
+      <div class="service-name">Corte y Barba Herengracht</div>
+      <p class="service-desc">La experiencia completa: corte artesanal más diseño y perfilado de barba con toalla caliente.</p>
+      <div class="service-meta">
+        <div class="service-price">₡17,000</div>
+        <div class="service-duration">1 hora</div>
+      </div>
+    </div>
+    <div class="service-card">
+      <span class="service-num">03</span>
+      <div class="service-name">Barba Van Gogh</div>
+      <p class="service-desc">Perfilado y diseño de barba con navaja, aceites premium y toalla caliente aromática.</p>
+      <div class="service-meta">
+        <div class="service-price">₡9,000</div>
+        <div class="service-duration">30 minutos</div>
+      </div>
+    </div>
+    <div class="service-card">
+      <span class="service-num">04</span>
+      <div class="service-name">Alisett</div>
+      <p class="service-desc">Tratamiento de alisado y control del cabello. Resultado duradero con productos de alta gama.</p>
+      <div class="service-meta">
+        <div class="service-price">₡15,000</div>
+        <div class="service-duration">30 minutos</div>
+      </div>
+    </div>
+  </div>
+  <div style="text-align:center; margin-top:56px;" class="reveal">
+    <a href="#" class="btn-gold" onclick="openModal()">Reservar Mi Cita</a>
+  </div>
+</section>
+
+<!-- EQUIPO -->
+<section id="equipo">
+  <div class="reveal">
+    <div class="section-label">Nuestros artesanos</div>
+    <h2 class="section-title">El<br><em>Equipo</em></h2>
+    <div class="divider-gold"><div class="diam"></div></div>
+  </div>
+  <div class="team-grid reveal">
+    <div class="team-card">
+      <div class="team-card-img">
+        <img src="alvin.jpg" alt="Alvin Terán" loading="lazy">
+      </div>
+      <div class="team-name">Alvin Terán</div>
+      <div class="team-role">Master Barber</div>
+      <p class="team-bio">Fundador de Barbería Ámsterdam y maestro del corte clásico con visión contemporánea. Especialista en técnicas de precisión para el caballero exigente.</p>
+    </div>
+    <div class="team-card">
+      <div class="team-card-img">
+        <img src="alejandro.jpg" alt="Alejandro Castro" loading="lazy">
+      </div>
+      <div class="team-name">Alejandro Castro</div>
+      <div class="team-role">Master Barber · Fundador</div>
+      <p class="team-bio">Fundador de Barbería Ámsterdam y maestro del corte clásico con visión contemporánea. Especialista en técnicas de precisión para el caballero exigente.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PARALLAX BANNER -->
+<div class="parallax-banner">
+  <div class="parallax-banner-img"></div>
+  <div class="parallax-banner-overlay"></div>
+  <div class="parallax-banner-content reveal">
+    <div style="font-size:10px;letter-spacing:6px;text-transform:uppercase;color:var(--gold);margin-bottom:16px">Plaza San Rafael · Escazú</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(32px,5vw,58px);font-weight:300;line-height:1.1;color:var(--white)">
+      El arte de la<br><em style="font-style:italic;color:var(--gold-light)">distinción masculina</em>
+    </div>
+  </div>
+</div>
+
+<!-- BOOKING CTA -->
+<section id="agendar" style="padding: 100px 48px;">
+  <div class="booking-inner reveal">
+    <div class="booking-ornament">✦</div>
+    <div class="section-label">Tu momento</div>
+    <h2 class="section-title" style="font-size: clamp(40px, 6vw, 72px);">
+      Reserva tu<br><em>experiencia</em>
+    </h2>
+    <p style="font-size:13px; color:var(--white-dim); line-height:2; margin: 20px 0 40px; letter-spacing:0.5px;">
+      Elige tu servicio, tu barbero y el horario que mejor se adapte a tu agenda.
+      La excelencia te espera en Plaza San Rafael, Escazú.
+    </p>
+    <a href="#" class="btn-gold" onclick="openModal()">Agendar Ahora</a>
+  </div>
+</section>
+
+<!-- HORARIO -->
+<section id="horario">
+  <div class="reveal">
+    <div class="section-label">Cuándo visitarnos</div>
+    <h2 class="section-title">Horario de<br><em>Atención</em></h2>
+    <div class="divider-gold"><div class="diam"></div></div>
+  </div>
+  <div class="schedule-grid reveal">
+    <div class="schedule-item">
+      <div class="schedule-day">Lunes — Sábado</div>
+      <div class="schedule-hours">10:00 AM — 8:00 PM</div>
+    </div>
+    <div class="schedule-item">
+      <div class="schedule-day">Domingos</div>
+      <div class="schedule-hours">11:00 AM — 6:00 PM</div>
+    </div>
+    <div class="schedule-item">
+      <div class="schedule-day">Días Feriados</div>
+      <div class="schedule-closed">Consultar disponibilidad</div>
+    </div>
+  </div>
+</section>
+
+<!-- UBICACIÓN -->
+<section id="ubicacion">
+  <div class="reveal">
+    <div class="section-label">Dónde encontrarnos</div>
+    <h2 class="section-title">Nuestra<br><em>Ubicación</em></h2>
+    <div class="divider-gold"><div class="diam"></div></div>
+  </div>
+  <div class="location-grid reveal">
+    <div class="location-detail">
+      <div class="location-item">
+        <div class="location-item-label">Dirección</div>
+        <div class="location-item-val">Plaza San Rafael<br>San Rafael de Escazú<br>San José, Costa Rica</div>
+      </div>
+      <div class="location-item">
+        <div class="location-item-label">WhatsApp</div>
+        <div class="location-item-val">+506 7093-8822</div>
+        <a href="https://wa.me/50670938822" target="_blank" class="whatsapp-btn" style="margin-top:12px">
+          <span>💬</span> Escribirnos
+        </a>
+      </div>
+      <div class="location-item">
+        <div class="location-item-label">Correo</div>
+        <div class="location-item-val">castroalejandro48@gmail.com</div>
+      </div>
+    </div>
+    <div class="map-placeholder">
+      <div class="map-icon">📍</div>
+      <div class="map-text">Plaza San Rafael, Escazú</div>
+      <a href="https://maps.google.com/?q=Plaza+San+Rafael+Escazu+Costa+Rica" target="_blank" class="btn-outline" style="margin-top:16px; font-size:10px; padding:12px 24px;">
+        Ver en Google Maps
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="logo"><em>Ámsterdam</em></div>
+      <p>Barbería de excelencia · Escazú, CR</p>
+    </div>
+    <div class="footer-links">
+      <a href="#servicios">Servicios</a>
+      <a href="#equipo">Equipo</a>
+      <a href="#horario">Horario</a>
+      <a href="#ubicacion">Contacto</a>
+    </div>
+    <div class="footer-links">
+      <a href="https://wa.me/50670938822" target="_blank">WhatsApp</a>
+      <a href="#" onclick="openModal()">Reservar Cita</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2026 Barbería Ámsterdam CR · barberiaamsterdamcr.com</div>
+    <div class="footer-copy">Escazú · San José · Costa Rica</div>
+  </div>
+</footer>
+
+<!-- ═══ MODAL DE CITAS ═══ -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-header">
+      <div class="modal-label">Reservaciones</div>
+      <div class="modal-title">Agenda tu cita</div>
+    </div>
+    <div class="modal-body">
+
+      <!-- STEP 1: SERVICIO -->
+      <div class="flow-step active" id="step1">
+        <div class="progress-dots">
+          <div class="p-dot done"></div>
+          <div class="p-dot"></div>
+          <div class="p-dot"></div>
+          <div class="p-dot"></div>
+        </div>
+        <div class="step-title">01 — Elige tu servicio</div>
+        <div class="service-option" onclick="selectSvc(this,'Corte Jordaan','₡12,000','40 min')">
+          <div><div class="opt-name">Corte Jordaan</div><div class="opt-meta">40 min</div></div>
+          <div style="display:flex;align-items:center;gap:12px"><div class="opt-price">₡12,000</div><div class="opt-check">✓</div></div>
+        </div>
+        <div class="service-option" onclick="selectSvc(this,'Corte y Barba Herengracht','₡17,000','1 hora')">
+          <div><div class="opt-name">Corte y Barba Herengracht</div><div class="opt-meta">1 hora</div></div>
+          <div style="display:flex;align-items:center;gap:12px"><div class="opt-price">₡17,000</div><div class="opt-check">✓</div></div>
+        </div>
+        <div class="service-option" onclick="selectSvc(this,'Barba Van Gogh','₡9,000','30 min')">
+          <div><div class="opt-name">Barba Van Gogh</div><div class="opt-meta">30 min</div></div>
+          <div style="display:flex;align-items:center;gap:12px"><div class="opt-price">₡9,000</div><div class="opt-check">✓</div></div>
+        </div>
+        <div class="service-option" onclick="selectSvc(this,'Alisett','₡15,000','30 min')">
+          <div><div class="opt-name">Alisett</div><div class="opt-meta">30 min</div></div>
+          <div style="display:flex;align-items:center;gap:12px"><div class="opt-price">₡15,000</div><div class="opt-check">✓</div></div>
+        </div>
+        <button class="modal-btn" onclick="goStep(2)">CONTINUAR</button>
+      </div>
+
+      <!-- STEP 2: BARBERO -->
+      <div class="flow-step" id="step2">
+        <div class="progress-dots">
+          <div class="p-dot done"></div>
+          <div class="p-dot done"></div>
+          <div class="p-dot"></div>
+          <div class="p-dot"></div>
+        </div>
+        <div class="step-title">02 — Elige tu barbero</div>
+        <div class="barber-option" onclick="selectBarber(this,'Alejandro Castro')">
+          <div><div class="opt-name">Alejandro Castro</div><div class="opt-meta">Master Barber · Fundador</div></div>
+          <div class="opt-check">✓</div>
+        </div>
+        <div class="barber-option" onclick="selectBarber(this,'Alvin Terán')">
+          <div><div class="opt-name">Alvin Terán</div><div class="opt-meta">Senior Barber</div></div>
+          <div class="opt-check">✓</div>
+        </div>
+        <div class="barber-option" onclick="selectBarber(this,'Sin preferencia')">
+          <div><div class="opt-name">Sin preferencia</div><div class="opt-meta">Barbero disponible</div></div>
+          <div class="opt-check">✓</div>
+        </div>
+        <button class="modal-btn" onclick="goStep(3)">CONTINUAR</button>
+        <button class="modal-btn-ghost" onclick="goStep(1)">← Volver</button>
+      </div>
+
+      <!-- STEP 3: FECHA -->
+      <div class="flow-step" id="step3">
+        <div class="progress-dots">
+          <div class="p-dot done"></div>
+          <div class="p-dot done"></div>
+          <div class="p-dot done"></div>
+          <div class="p-dot"></div>
+        </div>
+        <div class="step-title">03 — Fecha y hora</div>
+        <div class="cal-nav">
+          <button class="cal-arrow" onclick="changeMonth(-1)">‹</button>
+          <div class="cal-month-name" id="modal-month">Abril 2026</div>
+          <button class="cal-arrow" onclick="changeMonth(1)">›</button>
+        </div>
+        <div class="cal-grid" id="modal-cal"></div>
+        <div id="time-section" style="display:none">
+          <div class="step-title" id="time-label" style="margin-bottom:12px">Horarios</div>
+          <div class="time-grid" id="modal-times"></div>
+        </div>
+        <button class="modal-btn" onclick="goStep(4)" style="margin-top:16px">CONTINUAR</button>
+        <button class="modal-btn-ghost" onclick="goStep(2)">← Volver</button>
+      </div>
+
+      <!-- STEP 4: DATOS -->
+      <div class="flow-step" id="step4">
+        <div class="progress-dots">
+          <div class="p-dot done"></div>
+          <div class="p-dot done"></div>
+          <div class="p-dot done"></div>
+          <div class="p-dot done"></div>
+        </div>
+        <div class="step-title">04 — Tus datos</div>
+        <div class="field"><label>Nombre completo</label><input type="text" id="f-name" placeholder="Carlos Rodríguez"></div>
+        <div class="field"><label>Teléfono / WhatsApp</label><input type="tel" id="f-tel" placeholder="+506 8888-0000"></div>
+        <div class="field"><label>Correo electrónico</label><input type="email" id="f-email" placeholder="tu@email.com"></div>
+        <div class="field"><label>Notas (opcional)</label><input type="text" id="f-notes" placeholder="Ej: fade bajo, primera vez..."></div>
+        <button class="modal-btn" onclick="confirmBooking()">CONFIRMAR CITA</button>
+        <button class="modal-btn-ghost" onclick="goStep(3)">← Volver</button>
+      </div>
+
+      <!-- STEP 5: CONFIRMACIÓN -->
+      <div class="flow-step" id="step5">
+        <div class="confirm-box">
+          <div class="conf-icon">✦</div>
+          <div class="conf-title">Reserva Confirmada</div>
+          <div class="conf-sub" id="conf-client-name">Nos vemos pronto</div>
+          <div class="conf-details">
+            <strong id="conf-svc">—</strong><br>
+            con <strong id="conf-barber">—</strong><br>
+            <strong id="conf-dt">—</strong>
+          </div>
+        </div>
+        <p style="font-size:11px;color:var(--white-dim);text-align:center;line-height:2;letter-spacing:1px;margin-bottom:20px">
+          Recibirás confirmación por WhatsApp.<br>Te avisamos 2 horas antes.
+        </p>
+        <a href="https://wa.me/50670938822" target="_blank" class="modal-btn" style="display:block;text-align:center;text-decoration:none">
+          CONFIRMAR POR WHATSAPP
+        </a>
+        <button class="modal-btn-ghost" onclick="closeModal()">Cerrar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ── HERO IMAGE LOAD ──
+window.addEventListener('load', () => {
+  const img = document.getElementById('hero-img');
+  if(img) setTimeout(() => img.classList.add('loaded'), 100);
+});
+
+// ── CURSOR ──
+const cur = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; cur.style.left = mx+'px'; cur.style.top = my+'px'; });
+function animRing() { rx += (mx-rx)*0.12; ry += (my-ry)*0.12; ring.style.left = rx+'px'; ring.style.top = ry+'px'; requestAnimationFrame(animRing); }
+animRing();
+document.querySelectorAll('a,button,.service-option,.barber-option,.service-card,.cal-d,.t-slot').forEach(el => {
+  el.addEventListener('mouseenter', () => { cur.style.transform = 'translate(-50%,-50%) scale(2)'; ring.style.transform = 'translate(-50%,-50%) scale(1.5)'; ring.style.borderColor = 'rgba(201,168,76,0.7)'; });
+  el.addEventListener('mouseleave', () => { cur.style.transform = 'translate(-50%,-50%) scale(1)'; ring.style.transform = 'translate(-50%,-50%) scale(1)'; ring.style.borderColor = 'rgba(201,168,76,0.4)'; });
+});
+
+// ── NAV ──
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
+});
+
+// ── MOBILE MENU ──
+function toggleMobile() { document.getElementById('mobile-menu').classList.toggle('open'); }
+
+// ── SCROLL REVEAL ──
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+// ── MODAL ──
+function openModal() { document.getElementById('modal').classList.add('open'); goStep(1); renderCal(); }
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+document.getElementById('modal').addEventListener('click', e => { if(e.target === document.getElementById('modal')) closeModal(); });
+
+// ── BOOKING STATE ──
+let bSvc = '', bPrice = '', bDuration = '', bBarber = '', bDate = null, bTime = '';
+let calMonth = 3, calYear = 2026;
+
+function goStep(n) {
+  document.querySelectorAll('.flow-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step'+n).classList.add('active');
+}
+
+function selectSvc(el, name, price, dur) {
+  document.querySelectorAll('.service-option').forEach(e => e.classList.remove('sel'));
+  el.classList.add('sel'); bSvc = name; bPrice = price; bDuration = dur;
+}
+function selectBarber(el, name) {
+  document.querySelectorAll('.barber-option').forEach(e => e.classList.remove('sel'));
+  el.classList.add('sel'); bBarber = name;
+}
+
+// ── CALENDAR ──
+const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const days = ['DO','LU','MA','MI','JU','VI','SÁ'];
+const taken = ['09:00','10:30','14:00','15:30'];
+const slots = ['10:00','10:30','11:00','11:30','12:00','12:30','13:00','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30'];
+
+function changeMonth(d) { calMonth += d; if(calMonth>11){calMonth=0;calYear++;} if(calMonth<0){calMonth=11;calYear--;} renderCal(); }
+
+function renderCal() {
+  document.getElementById('modal-month').textContent = months[calMonth]+' '+calYear;
+  const first = new Date(calYear,calMonth,1).getDay();
+  const total = new Date(calYear,calMonth+1,0).getDate();
+  const today = new Date();
+  let html = days.map(d=>`<div class="cal-lbl">${d}</div>`).join('');
+  for(let i=0;i<first;i++) html+=`<div class="cal-d emp"></div>`;
+  for(let d=1;d<=total;d++){
+    const dt = new Date(calYear,calMonth,d);
+    const past = dt < new Date(today.getFullYear(),today.getMonth(),today.getDate());
+    const sel = bDate && bDate.getDate()===d && bDate.getMonth()===calMonth;
+    const tod = dt.toDateString()===today.toDateString();
+    let cls = 'cal-d';
+    if(past) cls+=' dis'; if(sel) cls+=' sel'; if(tod&&!sel) cls+=' tod';
+    html += `<div class="${cls}" ${!past?`onclick="pickDate(${d})"`:''}>${d}</div>`;
+  }
+  document.getElementById('modal-cal').innerHTML = html;
+}
+
+function pickDate(d) {
+  bDate = new Date(calYear,calMonth,d); bTime = ''; renderCal();
+  const dayName = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][bDate.getDay()];
+  document.getElementById('time-label').textContent = `${dayName} ${d} — Elige tu hora`;
+  document.getElementById('time-section').style.display = 'block';
+  renderTimes();
+}
+
+function renderTimes() {
+  document.getElementById('modal-times').innerHTML = slots.map(t => {
+    const tk = taken.includes(t);
+    const sel = bTime===t;
+    return `<div class="t-slot ${tk?'tak':''} ${sel?'sel':''}" ${!tk?`onclick="pickTime('${t}')"`:''}>${t}</div>`;
+  }).join('');
+}
+
+function pickTime(t) { bTime = t; renderTimes(); }
+
+function confirmBooking() {
+  const name = document.getElementById('f-name').value || 'Estimado cliente';
+  document.getElementById('conf-client-name').textContent = `Nos vemos pronto, ${name.split(' ')[0]}`;
+  document.getElementById('conf-svc').textContent = bSvc || 'Corte Jordaan';
+  document.getElementById('conf-barber').textContent = bBarber || 'Barbero asignado';
+  const dayN = bDate ? ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][bDate.getDay()]+' '+bDate.getDate()+' · '+bTime : 'Por confirmar';
+  document.getElementById('conf-dt').textContent = dayN;
+  goStep(5);
+}
+
+// init
+renderCal();
+</script>
+</body>
+</html>
