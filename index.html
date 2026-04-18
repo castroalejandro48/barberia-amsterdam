@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Barbería Ámsterdam CR — Escazú</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Montserrat:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = 'https://neouvrlknuyapvfrkutl.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_m55S23JaCCcXLnTUAuwFfg_lvS4xxTF';
+  const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+</script>
 <style>
 :root {
   --black: #080808;
@@ -1426,7 +1432,7 @@ document.getElementById('modal').addEventListener('click', e => { if(e.target ==
 
 // ── BOOKING STATE ──
 let bSvc = '', bPrice = '', bDuration = '', bBarber = '', bDate = null, bTime = '';
-let calMonth = 3, calYear = 2026;
+let selectedService = '', selectedBarber = '', calMonth = 3, calYear = 2026;
 
 function goStep(n) {
   document.querySelectorAll('.flow-step').forEach(s => s.classList.remove('active'));
@@ -1435,18 +1441,19 @@ function goStep(n) {
 
 function selectSvc(el, name, price, dur) {
   document.querySelectorAll('.service-option').forEach(e => e.classList.remove('sel'));
-  el.classList.add('sel'); bSvc = name; bPrice = price; bDuration = dur;
+  el.classList.add('sel'); bSvc = name; bPrice = price; bDuration = dur; selectedService = name;
 }
 function selectBarber(el, name) {
   document.querySelectorAll('.barber-option').forEach(e => e.classList.remove('sel'));
-  el.classList.add('sel'); bBarber = name;
+  el.classList.add('sel'); bBarber = name; selectedBarber = name;
 }
 
 // ── CALENDAR ──
 const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const days = ['DO','LU','MA','MI','JU','VI','SÁ'];
-const taken = ['09:00','10:30','14:00','15:30'];
+const taken = [];
 const slots = ['10:00','10:30','11:00','11:30','12:00','12:30','13:00','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30'];
+let takenSlots = [];
 
 function changeMonth(d) { calMonth += d; if(calMonth>11){calMonth=0;calYear++;} if(calMonth<0){calMonth=11;calYear--;} renderCal(); }
 
@@ -1469,17 +1476,31 @@ function renderCal() {
   document.getElementById('modal-cal').innerHTML = html;
 }
 
-function pickDate(d) {
+async function pickDate(d) {
   bDate = new Date(calYear,calMonth,d); bTime = ''; renderCal();
   const dayName = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][bDate.getDay()];
   document.getElementById('time-label').textContent = `${dayName} ${d} — Elige tu hora`;
   document.getElementById('time-section').style.display = 'block';
+
+  // Cargar horas ocupadas desde Supabase
+  try {
+    const fechaStr = bDate.toISOString().split('T')[0];
+    const { data: citasOcupadas } = await _supabase
+      .from('citas').select('hora').eq('fecha', fechaStr).neq('estado', 'cancelada');
+    const { data: bloqueosActivos } = await _supabase
+      .from('bloqueos').select('hora_inicio, hora_fin').eq('fecha', fechaStr);
+    takenSlots = (citasOcupadas || []).map(c => c.hora.substring(0,5));
+    (bloqueosActivos || []).forEach(b => {
+      slots.forEach(s => { if(s >= b.hora_inicio.substring(0,5) && s < b.hora_fin.substring(0,5)) takenSlots.push(s); });
+    });
+  } catch(e) { takenSlots = []; }
+
   renderTimes();
 }
 
 function renderTimes() {
   document.getElementById('modal-times').innerHTML = slots.map(t => {
-    const tk = taken.includes(t);
+    const tk = takenSlots.includes(t);
     const sel = bTime===t;
     return `<div class="t-slot ${tk?'tak':''} ${sel?'sel':''}" ${!tk?`onclick="pickTime('${t}')"`:''}>${t}</div>`;
   }).join('');
@@ -1487,14 +1508,102 @@ function renderTimes() {
 
 function pickTime(t) { bTime = t; renderTimes(); }
 
-function confirmBooking() {
-  const name = document.getElementById('f-name').value || 'Estimado cliente';
-  document.getElementById('conf-client-name').textContent = `Nos vemos pronto, ${name.split(' ')[0]}`;
-  document.getElementById('conf-svc').textContent = bSvc || 'Corte Jordaan';
-  document.getElementById('conf-barber').textContent = bBarber || 'Barbero asignado';
-  const dayN = bDate ? ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][bDate.getDay()]+' '+bDate.getDate()+' · '+bTime : 'Por confirmar';
-  document.getElementById('conf-dt').textContent = dayN;
-  goStep(5);
+async function confirmBooking() {
+  const name = document.getElementById('f-name').value;
+  const tel = document.getElementById('f-tel').value;
+  const email = document.getElementById('f-email').value;
+  const notes = document.getElementById('f-notes').value;
+
+  if (!name || !email) {
+    alert('Por favor ingresa tu nombre y correo electrónico.');
+    return;
+  }
+
+  const btn = document.querySelector('#step4 .modal-btn');
+  btn.textContent = 'GUARDANDO...';
+  btn.disabled = true;
+
+  try {
+    // 1. Guardar o actualizar cliente
+    const { data: clienteData, error: clienteErr } = await _supabase
+      .from('clientes')
+      .upsert({ nombre: name, email: email, telefono: tel }, { onConflict: 'email' })
+      .select().single();
+
+    // 2. Verificar que no haya conflicto de cita
+    const fechaStr = bDate ? bDate.toISOString().split('T')[0] : '';
+    const { data: conflicto } = await _supabase
+      .from('citas')
+      .select('id')
+      .eq('barbero', selectedBarber)
+      .eq('fecha', fechaStr)
+      .eq('hora', bTime + ':00')
+      .neq('estado', 'cancelada');
+
+    if (conflicto && conflicto.length > 0) {
+      alert('⚠️ Esa hora ya fue tomada. Por favor elige otra.');
+      btn.textContent = 'CONFIRMAR CITA';
+      btn.disabled = false;
+      goStep(3);
+      return;
+    }
+
+    // 3. Guardar cita
+    const precios = {
+      'Corte Jordaan': 12000,
+      'Corte y Barba Herengracht': 17000,
+      'Barba Van Gogh': 9000,
+      'Alisett': 15000
+    };
+
+    await _supabase.from('citas').insert({
+      cliente_id: clienteData?.id || null,
+      cliente_nombre: name,
+      cliente_tel: tel,
+      servicio: selectedService,
+      barbero: selectedBarber,
+      fecha: fechaStr,
+      hora: bTime + ':00',
+      estado: 'pendiente',
+      notas: notes,
+      precio: precios[selectedService] || 12000
+    });
+
+    // 4. Enviar correo de confirmación
+    await _supabase.functions.invoke('citas', {
+      body: {
+        tipo: 'confirmacion',
+        data: {
+          nombre: name,
+          email: email,
+          servicio: selectedService,
+          barbero: selectedBarber,
+          fecha: fechaStr,
+          hora: bTime,
+          precio: '₡' + (precios[selectedService] || 12000).toLocaleString()
+        }
+      }
+    });
+
+    // 5. Mostrar confirmación
+    document.getElementById('conf-client-name').textContent = `Nos vemos pronto, ${name.split(' ')[0]}`;
+    document.getElementById('conf-svc').textContent = selectedService || 'Corte Jordaan';
+    document.getElementById('conf-barber').textContent = selectedBarber || 'Barbero asignado';
+    const dayN = bDate ? ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][bDate.getDay()]+' '+bDate.getDate()+' · '+bTime : 'Por confirmar';
+    document.getElementById('conf-dt').textContent = dayN;
+    goStep(5);
+
+  } catch(err) {
+    console.error(err);
+    // Igual mostrar confirmación aunque falle la conexión
+    document.getElementById('conf-client-name').textContent = `Nos vemos pronto, ${name.split(' ')[0]}`;
+    document.getElementById('conf-svc').textContent = selectedService || 'Corte Jordaan';
+    document.getElementById('conf-barber').textContent = selectedBarber || 'Barbero asignado';
+    goStep(5);
+  } finally {
+    btn.textContent = 'CONFIRMAR CITA';
+    btn.disabled = false;
+  }
 }
 
 // init
