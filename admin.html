@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin · Barbería Ámsterdam</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = 'https://neouvrlknuyapvfrkutl.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_m55S23JaCCcXLnTUAuwFfg_lvS4xxTF';
+  const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+</script>
 <style>
 :root {
   --black: #080808;
@@ -609,34 +615,75 @@ function doLogout() {
 // ── STATE ──
 let currentDay = new Date();
 let currentView = 'dia';
-let blocks = [
-  {barber:'ambos', date:'2026-04-17', start:'13:00', end:'14:00', reason:'Almuerzo'},
-];
-let appointments = [
-  {id:1, client:'Isaac Rochwerger', tel:'+506 8811-0001', service:'Corte Jordaan', barber:'alvin', date:'2026-04-17', time:'10:20', status:'confirmed', price:12000},
-  {id:2, client:'Samir Zuwolinsky', tel:'+506 8822-0002', service:'Corte y Barba Herengracht', barber:'alvin', date:'2026-04-17', time:'11:00', status:'confirmed', price:17000},
-  {id:3, client:'Esteban Quesada', tel:'+506 8833-0003', service:'Corte y Barba Herengracht', barber:'alvin', date:'2026-04-17', time:'12:00', status:'confirmed', price:17000},
-  {id:4, client:'Natan Carmona', tel:'+506 8844-0004', service:'Corte y Barba Herengracht', barber:'alvin', date:'2026-04-17', time:'13:00', status:'pending', price:17000},
-  {id:5, client:'Diego Groisman', tel:'+506 8855-0005', service:'Corte Jordaan', barber:'alvin', date:'2026-04-17', time:'15:40', status:'confirmed', price:12000},
-  {id:6, client:'Eduardo Bitter', tel:'+506 8866-0006', service:'Barba Van Gogh', barber:'alvin', date:'2026-04-17', time:'17:00', status:'pending', price:9000},
-  {id:7, client:'Ozman Fonseca', tel:'+506 8877-0007', service:'Corte Jordaan', barber:'alejandro', date:'2026-04-17', time:'10:30', status:'confirmed', price:12000},
-  {id:8, client:'Randall Fernández', tel:'+506 8888-0008', service:'Corte Jordaan', barber:'alejandro', date:'2026-04-17', time:'19:10', status:'pending', price:12000},
-];
+let blocks = [];
+let appointments = [];
 
 const hours = ['10:00','10:30','11:00','11:30','12:00','12:30','13:00','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30'];
 const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const dayNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 const dayNamesShort = ['DO','LU','MA','MI','JU','VI','SÁ'];
 
-function initApp() {
+async function initApp() {
   updateTopbarDate();
-  renderDayView();
-  renderAppts('todas');
-  renderBlocked();
-  // Set today's date as default in forms
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('block-date').value = today;
   document.getElementById('new-date').value = today;
+  await loadData();
+}
+
+async function loadData() {
+  // Cargar citas desde Supabase
+  const { data: citasData } = await _supabase
+    .from('citas')
+    .select('*')
+    .order('fecha', { ascending: true })
+    .order('hora', { ascending: true });
+
+  appointments = (citasData || []).map(c => ({
+    id: c.id,
+    client: c.cliente_nombre,
+    tel: c.cliente_tel,
+    service: c.servicio,
+    barber: c.barbero,
+    date: c.fecha,
+    time: c.hora ? c.hora.substring(0,5) : '',
+    status: c.estado,
+    price: c.precio,
+    notas: c.notas
+  }));
+
+  // Cargar bloqueos desde Supabase
+  const { data: bloqueosData } = await _supabase
+    .from('bloqueos')
+    .select('*')
+    .order('fecha', { ascending: true });
+
+  blocks = (bloqueosData || []).map(b => ({
+    id: b.id,
+    barber: b.barbero,
+    date: b.fecha,
+    start: b.hora_inicio ? b.hora_inicio.substring(0,5) : '',
+    end: b.hora_fin ? b.hora_fin.substring(0,5) : '',
+    reason: b.motivo || 'No disponible'
+  }));
+
+  // Actualizar stats
+  const today = new Date().toISOString().split('T')[0];
+  const citasHoy = appointments.filter(a => a.date === today && a.status !== 'cancelada');
+  const startOfWeek = new Date();
+  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+  const citasSemana = appointments.filter(a => a.date >= startOfWeek.toISOString().split('T')[0] && a.status !== 'cancelada');
+  const pendientes = appointments.filter(a => a.status === 'pendiente');
+  const ingresosHoy = citasHoy.reduce((sum, a) => sum + (a.price || 0), 0);
+
+  document.getElementById('stat-hoy').textContent = citasHoy.length;
+  document.getElementById('stat-semana').textContent = citasSemana.length;
+  document.getElementById('stat-pendientes').textContent = pendientes.length;
+  document.getElementById('stat-ingresos').textContent = ingresosHoy >= 1000 ? Math.round(ingresosHoy/1000)+'k' : ingresosHoy;
+
+  renderDayView();
+  renderAppts('todas');
+  renderBlocked();
 }
 
 function updateTopbarDate() {
@@ -765,8 +812,8 @@ function renderWeekView() {
 // ── APPOINTMENTS LIST ──
 function renderAppts(filter) {
   let list = [...appointments].sort((a,b) => a.time.localeCompare(b.time));
-  if(filter==='pendientes') list = list.filter(a => a.status==='pending');
-  if(filter==='confirmadas') list = list.filter(a => a.status==='confirmed');
+  if(filter==='pendientes') list = list.filter(a => a.status==='pendiente');
+  if(filter==='confirmadas') list = list.filter(a => a.status==='confirmada');
 
   if(!list.length) {
     document.getElementById('appts-list').innerHTML = `<div class="empty"><div class="empty-icon">✦</div><div class="empty-text">No hay citas en esta categoría</div></div>`;
@@ -778,14 +825,14 @@ function renderAppts(filter) {
       <div class="appt-time">${a.time}</div>
       <div class="appt-info">
         <div class="appt-client">${a.client}</div>
-        <div class="appt-detail">${a.service} · ${a.date} · ${a.tel}</div>
+        <div class="appt-detail">${a.service} · ${a.date} · ${a.tel||'—'}</div>
       </div>
       <div class="appt-barber-tag ${a.barber}">${a.barber==='alejandro'?'Alejandro':'Alvin'}</div>
-      <div class="appt-status ${a.status}">${a.status==='pending'?'Pendiente':'Confirmada'}</div>
+      <div class="appt-status ${a.status}">${a.status==='pendiente'?'Pendiente':'Confirmada'}</div>
       <div class="appt-actions">
-        ${a.status==='pending'?`<button class="appt-btn" onclick="confirmAppt(${a.id})">✓ Confirmar</button>`:''}
-        <a href="https://wa.me/${a.tel.replace(/\D/g,'')}" target="_blank" class="appt-btn" style="text-decoration:none;display:inline-flex;align-items:center">💬</a>
-        <button class="appt-btn danger" onclick="cancelAppt(${a.id})">✕</button>
+        ${a.status==='pendiente'?`<button class="appt-btn" onclick="confirmAppt('${a.id}')">✓ Confirmar</button>`:''}
+        <a href="https://wa.me/${(a.tel||'').replace(/\D/g,'')}" target="_blank" class="appt-btn" style="text-decoration:none;display:inline-flex;align-items:center">💬</a>
+        <button class="appt-btn danger" onclick="cancelAppt('${a.id}')">✕</button>
       </div>
     </div>
   `).join('');
@@ -797,29 +844,40 @@ function filterAppts(f, btn) {
   renderAppts(f);
 }
 
-function confirmAppt(id) {
+async function confirmAppt(id) {
+  await _supabase.from('citas').update({ estado: 'confirmada' }).eq('id', id);
   const a = appointments.find(x => x.id===id);
-  if(a) { a.status='confirmed'; renderAppts('todas'); renderDayView(); }
+  if(a) { a.status='confirmada'; renderAppts('todas'); renderDayView(); }
 }
-function cancelAppt(id) {
+async function cancelAppt(id) {
   if(confirm('¿Cancelar esta cita?')) {
+    await _supabase.from('citas').update({ estado: 'cancelada' }).eq('id', id);
     appointments = appointments.filter(x => x.id!==id);
     renderAppts('todas'); renderDayView();
   }
 }
 
 // ── BLOCKS ──
-function addBlock() {
+async function addBlock() {
   const barber = document.getElementById('block-barber').value;
   const date = document.getElementById('block-date').value;
   const start = document.getElementById('block-start').value;
   const end = document.getElementById('block-end').value;
   const reason = document.getElementById('block-reason').value || 'No disponible';
   if(!date) { alert('Selecciona una fecha'); return; }
-  blocks.push({barber, date, start, end, reason});
-  renderBlocked();
-  renderDayView();
-  document.getElementById('block-reason').value = '';
+
+  const { data, error } = await _supabase.from('bloqueos').insert({
+    barbero: barber, fecha: date,
+    hora_inicio: start+':00', hora_fin: end+':00', motivo: reason
+  }).select().single();
+
+  if(!error) {
+    blocks.push({ id: data.id, barber, date, start, end, reason });
+    renderBlocked(); renderDayView();
+    document.getElementById('block-reason').value = '';
+  } else {
+    alert('Error al guardar: ' + error.message);
+  }
 }
 
 function renderBlocked() {
@@ -827,21 +885,21 @@ function renderBlocked() {
     document.getElementById('blocked-list').innerHTML = `<div class="empty"><div class="empty-icon">✦</div><div class="empty-text">No hay horas bloqueadas</div></div>`;
     return;
   }
-  document.getElementById('blocked-list').innerHTML = blocks.map((b,i) => `
+  document.getElementById('blocked-list').innerHTML = blocks.map((b) => `
     <div class="blocked-item">
       <div class="blocked-item-info">
         <div class="blocked-item-date">${b.date} · ${b.barber==='ambos'?'Ambos':b.barber==='alejandro'?'Alejandro':'Alvin'}</div>
         <div class="blocked-item-time">${b.start} — ${b.end} · ${b.reason}</div>
       </div>
-      <button class="unblock-btn" onclick="removeBlock(${i})">Quitar</button>
+      <button class="unblock-btn" onclick="removeBlock('${b.id}')">Quitar</button>
     </div>
   `).join('');
 }
 
-function removeBlock(i) {
-  blocks.splice(i,1);
-  renderBlocked();
-  renderDayView();
+async function removeBlock(id) {
+  await _supabase.from('bloqueos').delete().eq('id', id);
+  blocks = blocks.filter(b => b.id !== id);
+  renderBlocked(); renderDayView();
 }
 
 // ── NEW APPOINTMENT ──
@@ -857,7 +915,7 @@ function quickAdd(barber, time, date) {
   document.getElementById('new-date').value = date;
   openNewAppt();
 }
-function saveNewAppt() {
+async function saveNewAppt() {
   const client = document.getElementById('new-client').value;
   const tel = document.getElementById('new-tel').value;
   const service = document.getElementById('new-service').value.split(' —')[0];
@@ -866,22 +924,27 @@ function saveNewAppt() {
   const time = document.getElementById('new-time').value;
   if(!client||!date) { alert('Por favor llena el nombre y la fecha'); return; }
 
-  // Check for conflict
-  const conflict = appointments.find(a => a.barber===barber && a.date===date && a.time===time);
+  // Verificar conflicto
+  const conflict = appointments.find(a => a.barber===barber && a.date===date && a.time===time && a.status!=='cancelada');
   if(conflict) { alert(`⚠️ ${barber==='alejandro'?'Alejandro':'Alvin'} ya tiene una cita a las ${time}. Elige otra hora.`); return; }
 
   const prices = {'Corte Jordaan':12000,'Corte y Barba Herengracht':17000,'Barba Van Gogh':9000,'Alisett':15000};
-  appointments.push({
-    id: Date.now(), client, tel, service, barber, date, time,
-    status:'pending', price: prices[service]||12000
-  });
 
-  closeModal();
-  renderDayView();
-  renderAppts('todas');
-  document.getElementById('new-client').value='';
-  document.getElementById('new-tel').value='';
-  document.getElementById('new-notes').value='';
+  const { data, error } = await _supabase.from('citas').insert({
+    cliente_nombre: client, cliente_tel: tel,
+    servicio: service, barbero: barber,
+    fecha: date, hora: time+':00',
+    estado: 'pendiente', precio: prices[service]||12000
+  }).select().single();
+
+  if(!error) {
+    appointments.push({ id: data.id, client, tel, service, barber, date, time, status:'pendiente', price: prices[service]||12000 });
+    closeModal(); renderDayView(); renderAppts('todas');
+    document.getElementById('new-client').value='';
+    document.getElementById('new-tel').value='';
+  } else {
+    alert('Error al guardar: ' + error.message);
+  }
 }
 
 function showApptDetail(id) {
