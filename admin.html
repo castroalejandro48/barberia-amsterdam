@@ -668,11 +668,11 @@ async function loadData() {
   }));
 
   // Actualizar stats
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDateStr(new Date());
   const citasHoy = appointments.filter(a => a.date === today && a.status !== 'cancelada');
   const startOfWeek = new Date();
   startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-  const citasSemana = appointments.filter(a => a.date >= startOfWeek.toISOString().split('T')[0] && a.status !== 'cancelada');
+  const citasSemana = appointments.filter(a => a.date >= getLocalDateStr(startOfWeek) && a.status !== 'cancelada');
   const pendientes = appointments.filter(a => a.status === 'pendiente');
   const ingresosHoy = citasHoy.reduce((sum, a) => sum + (a.price || 0), 0);
 
@@ -721,8 +721,16 @@ function changeDay(d) {
 }
 
 // ── DAY VIEW ──
+function getLocalDateStr(date) {
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${year}-${month}-${day}`;
+}
+
 function renderDayView() {
-  const dateStr = currentDay.toISOString().split('T')[0];
+  const dateStr = getLocalDateStr(currentDay);
   const dayAppts = appointments.filter(a => a.date === dateStr);
   const dayBlocks = blocks.filter(b => b.date === dateStr);
 
