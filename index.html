@@ -1269,20 +1269,48 @@ footer {
   <div class="modal">
     <button class="modal-close" onclick="closeModal()">✕</button>
     <div class="modal-header">
-      <div class="modal-label">Reservaciones</div>
-      <div class="modal-title">Agenda tu cita</div>
+      <div class="modal-label" id="modal-label-top">Reservaciones</div>
+      <div class="modal-title" id="modal-title-top">Agenda tu cita</div>
     </div>
     <div class="modal-body">
 
-      <!-- STEP 1: SERVICIO -->
-      <div class="flow-step active" id="step1">
-        <div class="progress-dots">
-          <div class="p-dot done"></div>
-          <div class="p-dot"></div>
-          <div class="p-dot"></div>
-          <div class="p-dot"></div>
+      <!-- STEP LOGIN -->
+      <div class="flow-step active" id="step-login">
+        <div style="text-align:center;margin-bottom:24px;">
+          <div style="font-size:11px;color:var(--white-dim);letter-spacing:1px;line-height:1.8">
+            Ingresa para agendar sin tener que llenar tus datos cada vez.
+          </div>
         </div>
-        <div class="step-title">01 — Elige tu servicio</div>
+        <div class="field"><label>Correo electrónico</label><input type="email" id="login-email" placeholder="tu@email.com"></div>
+        <div class="field"><label>Contraseña</label><input type="password" id="login-pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')doClientLogin()"></div>
+        <div id="login-err-msg" style="font-size:11px;color:#C94C4C;margin-bottom:8px;display:none">Correo o contraseña incorrectos.</div>
+        <button class="modal-btn" onclick="doClientLogin()">INGRESAR</button>
+        <div style="text-align:center;margin:16px 0;font-size:11px;color:var(--white-dim)">¿Primera vez?</div>
+        <button class="modal-btn-ghost" onclick="goStep('step-register')">CREAR MI CUENTA</button>
+      </div>
+
+      <!-- STEP REGISTER -->
+      <div class="flow-step" id="step-register">
+        <div class="step-title">Crear cuenta</div>
+        <div class="field"><label>Nombre completo</label><input type="text" id="reg-name" placeholder="Carlos Rodríguez"></div>
+        <div class="field"><label>Teléfono / WhatsApp</label><input type="tel" id="reg-tel" placeholder="+506 8888-0000"></div>
+        <div class="field"><label>Correo electrónico</label><input type="email" id="reg-email" placeholder="tu@email.com"></div>
+        <div class="field"><label>Contraseña</label><input type="password" id="reg-pwd" placeholder="Mínimo 6 caracteres"></div>
+        <div class="field"><label>¿Cómo prefieres tu corte? (opcional)</label><input type="text" id="reg-pref" placeholder="Ej: fade bajo, delineado clásico..."></div>
+        <button class="modal-btn" onclick="doClientRegister()">CREAR MI MEMBRESÍA</button>
+        <button class="modal-btn-ghost" onclick="goStep('step-login')">← Ya tengo cuenta</button>
+      </div>
+
+      <!-- STEP 1: SERVICIO -->
+      <div class="flow-step" id="step1">
+        <div class="progress-dots">
+          <div class="p-dot done"></div><div class="p-dot"></div>
+          <div class="p-dot"></div><div class="p-dot"></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div class="step-title" style="margin:0">01 — Elige tu servicio</div>
+          <div id="client-greeting" style="font-size:11px;color:var(--gold);letter-spacing:1px"></div>
+        </div>
         <div class="service-option" onclick="selectSvc(this,'Corte Jordaan','₡12,000','40 min')">
           <div><div class="opt-name">Corte Jordaan</div><div class="opt-meta">40 min</div></div>
           <div style="display:flex;align-items:center;gap:12px"><div class="opt-price">₡12,000</div><div class="opt-check">✓</div></div>
@@ -1299,16 +1327,15 @@ footer {
           <div><div class="opt-name">Alisett</div><div class="opt-meta">30 min</div></div>
           <div style="display:flex;align-items:center;gap:12px"><div class="opt-price">₡15,000</div><div class="opt-check">✓</div></div>
         </div>
-        <button class="modal-btn" onclick="goStep(2)">CONTINUAR</button>
+        <button class="modal-btn" onclick="goStep('step2')">CONTINUAR</button>
+        <button class="modal-btn-ghost" onclick="clientLogout()">Cerrar sesión</button>
       </div>
 
       <!-- STEP 2: BARBERO -->
       <div class="flow-step" id="step2">
         <div class="progress-dots">
-          <div class="p-dot done"></div>
-          <div class="p-dot done"></div>
-          <div class="p-dot"></div>
-          <div class="p-dot"></div>
+          <div class="p-dot done"></div><div class="p-dot done"></div>
+          <div class="p-dot"></div><div class="p-dot"></div>
         </div>
         <div class="step-title">02 — Elige tu barbero</div>
         <div class="barber-option" onclick="selectBarber(this,'Alejandro Castro')">
@@ -1316,24 +1343,22 @@ footer {
           <div class="opt-check">✓</div>
         </div>
         <div class="barber-option" onclick="selectBarber(this,'Alvin Terán')">
-          <div><div class="opt-name">Alvin Terán</div><div class="opt-meta">Senior Barber</div></div>
+          <div><div class="opt-name">Alvin Terán</div><div class="opt-meta">Master Barber</div></div>
           <div class="opt-check">✓</div>
         </div>
         <div class="barber-option" onclick="selectBarber(this,'Sin preferencia')">
           <div><div class="opt-name">Sin preferencia</div><div class="opt-meta">Barbero disponible</div></div>
           <div class="opt-check">✓</div>
         </div>
-        <button class="modal-btn" onclick="goStep(3)">CONTINUAR</button>
-        <button class="modal-btn-ghost" onclick="goStep(1)">← Volver</button>
+        <button class="modal-btn" onclick="goStep('step3')">CONTINUAR</button>
+        <button class="modal-btn-ghost" onclick="goStep('step1')">← Volver</button>
       </div>
 
       <!-- STEP 3: FECHA -->
       <div class="flow-step" id="step3">
         <div class="progress-dots">
-          <div class="p-dot done"></div>
-          <div class="p-dot done"></div>
-          <div class="p-dot done"></div>
-          <div class="p-dot"></div>
+          <div class="p-dot done"></div><div class="p-dot done"></div>
+          <div class="p-dot done"></div><div class="p-dot"></div>
         </div>
         <div class="step-title">03 — Fecha y hora</div>
         <div class="cal-nav">
@@ -1344,27 +1369,35 @@ footer {
         <div class="cal-grid" id="modal-cal"></div>
         <div id="time-section" style="display:none">
           <div class="step-title" id="time-label" style="margin-bottom:12px">Horarios</div>
+          <div id="time-loading" style="display:none;text-align:center;padding:16px;font-size:11px;color:var(--gold);letter-spacing:2px">Cargando horarios...</div>
           <div class="time-grid" id="modal-times"></div>
         </div>
-        <button class="modal-btn" onclick="goStep(4)" style="margin-top:16px">CONTINUAR</button>
-        <button class="modal-btn-ghost" onclick="goStep(2)">← Volver</button>
+        <button class="modal-btn" onclick="goStep('step4')" style="margin-top:16px">CONTINUAR</button>
+        <button class="modal-btn-ghost" onclick="goStep('step2')">← Volver</button>
       </div>
 
-      <!-- STEP 4: DATOS -->
+      <!-- STEP 4: CONFIRMAR -->
       <div class="flow-step" id="step4">
         <div class="progress-dots">
-          <div class="p-dot done"></div>
-          <div class="p-dot done"></div>
-          <div class="p-dot done"></div>
-          <div class="p-dot done"></div>
+          <div class="p-dot done"></div><div class="p-dot done"></div>
+          <div class="p-dot done"></div><div class="p-dot done"></div>
         </div>
-        <div class="step-title">04 — Tus datos</div>
-        <div class="field"><label>Nombre completo</label><input type="text" id="f-name" placeholder="Carlos Rodríguez"></div>
-        <div class="field"><label>Teléfono / WhatsApp</label><input type="tel" id="f-tel" placeholder="+506 8888-0000"></div>
-        <div class="field"><label>Correo electrónico</label><input type="email" id="f-email" placeholder="tu@email.com"></div>
-        <div class="field"><label>Notas (opcional)</label><input type="text" id="f-notes" placeholder="Ej: fade bajo, primera vez..."></div>
+        <div class="step-title">04 — Confirmar cita</div>
+        <div style="background:var(--card);border:1px solid var(--border);padding:20px;margin-bottom:20px;">
+          <div style="font-size:11px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px">Resumen</div>
+          <div style="font-size:13px;line-height:2.2;">
+            <div>✂ <strong id="pre-svc">—</strong></div>
+            <div>👤 <strong id="pre-barber">—</strong></div>
+            <div>📅 <strong id="pre-dt">—</strong></div>
+          </div>
+        </div>
+        <div class="field"><label>Notas para el barbero (opcional)</label><input type="text" id="f-notes" placeholder="Ej: fade bajo, primera vez..."></div>
+        <div class="field" id="coupon-field">
+          <label>Cupón de descuento (opcional)</label>
+          <input type="text" id="f-coupon" placeholder="Ej: AMST4X2B" style="text-transform:uppercase">
+        </div>
         <button class="modal-btn" onclick="confirmBooking()">CONFIRMAR CITA</button>
-        <button class="modal-btn-ghost" onclick="goStep(3)">← Volver</button>
+        <button class="modal-btn-ghost" onclick="goStep('step3')">← Volver</button>
       </div>
 
       <!-- STEP 5: CONFIRMACIÓN -->
@@ -1426,17 +1459,99 @@ const obs = new IntersectionObserver(entries => {
 document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
 // ── MODAL ──
-function openModal() { document.getElementById('modal').classList.add('open'); goStep(1); renderCal(); }
+let currentClient = null;
+
+function openModal() {
+  document.getElementById('modal').classList.add('open');
+  // Si ya tiene sesión guardada, ir directo a servicios
+  const saved = localStorage.getItem('amsterdam_client');
+  if(saved) {
+    currentClient = JSON.parse(saved);
+    document.getElementById('client-greeting').textContent = `Hola, ${currentClient.nombre.split(' ')[0]} ✦`;
+    goStep('step1');
+  } else {
+    goStep('step-login');
+  }
+  renderCal();
+}
 function closeModal() { document.getElementById('modal').classList.remove('open'); }
 document.getElementById('modal').addEventListener('click', e => { if(e.target === document.getElementById('modal')) closeModal(); });
+
+// ── CLIENT AUTH ──
+async function doClientLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pwd = document.getElementById('login-pwd').value;
+  if(!email || !pwd) { document.getElementById('login-err-msg').style.display='block'; return; }
+
+  const { data, error } = await _supabase
+    .from('clientes').select('*').eq('email', email).single();
+
+  if(error || !data) {
+    document.getElementById('login-err-msg').style.display='block'; return;
+  }
+
+  // Simple password check (hash básico)
+  const hash = btoa(pwd + email);
+  if(data.password_hash !== hash) {
+    document.getElementById('login-err-msg').style.display='block'; return;
+  }
+
+  currentClient = data;
+  localStorage.setItem('amsterdam_client', JSON.stringify(data));
+  document.getElementById('login-err-msg').style.display='none';
+  document.getElementById('client-greeting').textContent = `Hola, ${data.nombre.split(' ')[0]} ✦`;
+  goStep('step1');
+}
+
+async function doClientRegister() {
+  const name = document.getElementById('reg-name').value.trim();
+  const tel = document.getElementById('reg-tel').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pwd = document.getElementById('reg-pwd').value;
+  const pref = document.getElementById('reg-pref').value.trim();
+
+  if(!name || !email || !pwd) { alert('Por favor llena nombre, correo y contraseña.'); return; }
+  if(pwd.length < 6) { alert('La contraseña debe tener al menos 6 caracteres.'); return; }
+
+  const hash = btoa(pwd + email);
+
+  const { data, error } = await _supabase.from('clientes')
+    .insert({ nombre: name, email, telefono: tel, preferencias: pref, password_hash: hash })
+    .select().single();
+
+  if(error) {
+    if(error.code === '23505') alert('Ese correo ya tiene una cuenta. Inicia sesión.');
+    else alert('Error al crear cuenta: ' + error.message);
+    return;
+  }
+
+  currentClient = data;
+  localStorage.setItem('amsterdam_client', JSON.stringify(data));
+  document.getElementById('client-greeting').textContent = `Hola, ${data.nombre.split(' ')[0]} ✦`;
+  goStep('step1');
+}
+
+function clientLogout() {
+  currentClient = null;
+  localStorage.removeItem('amsterdam_client');
+  goStep('step-login');
+}
 
 // ── BOOKING STATE ──
 let bSvc = '', bPrice = '', bDuration = '', bBarber = '', bDate = null, bTime = '';
 let selectedService = '', selectedBarber = '', calMonth = 3, calYear = 2026;
 
-function goStep(n) {
+function goStep(id) {
   document.querySelectorAll('.flow-step').forEach(s => s.classList.remove('active'));
-  document.getElementById('step'+n).classList.add('active');
+  const el = document.getElementById(id) || document.getElementById('step'+id);
+  if(el) el.classList.add('active');
+  // Update preview in step4
+  if(id === 'step4' || id === 4) {
+    const dayN = bDate ? ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][bDate.getDay()]+' '+bDate.getDate()+' · '+bTime : '—';
+    document.getElementById('pre-svc').textContent = selectedService || '—';
+    document.getElementById('pre-barber').textContent = selectedBarber || '—';
+    document.getElementById('pre-dt').textContent = dayN;
+  }
 }
 
 function selectSvc(el, name, price, dur) {
@@ -1481,20 +1596,32 @@ async function pickDate(d) {
   const dayName = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][bDate.getDay()];
   document.getElementById('time-label').textContent = `${dayName} ${d} — Elige tu hora`;
   document.getElementById('time-section').style.display = 'block';
+  document.getElementById('time-loading').style.display = 'block';
+  document.getElementById('modal-times').innerHTML = '';
 
-  // Cargar horas ocupadas desde Supabase
   try {
-    const fechaStr = bDate.toISOString().split('T')[0];
+    const year = bDate.getFullYear();
+    const month = String(bDate.getMonth()+1).padStart(2,'0');
+    const day = String(bDate.getDate()).padStart(2,'0');
+    const fechaStr = `${year}-${month}-${day}`;
+
     const { data: citasOcupadas } = await _supabase
-      .from('citas').select('hora').eq('fecha', fechaStr).neq('estado', 'cancelada');
+      .from('citas').select('hora,barbero').eq('fecha', fechaStr).neq('estado','cancelada');
     const { data: bloqueosActivos } = await _supabase
-      .from('bloqueos').select('hora_inicio, hora_fin').eq('fecha', fechaStr);
-    takenSlots = (citasOcupadas || []).map(c => c.hora.substring(0,5));
-    (bloqueosActivos || []).forEach(b => {
-      slots.forEach(s => { if(s >= b.hora_inicio.substring(0,5) && s < b.hora_fin.substring(0,5)) takenSlots.push(s); });
+      .from('bloqueos').select('hora_inicio,hora_fin,barbero').eq('fecha', fechaStr);
+
+    // Contar citas por hora (bloqueada si AMBOS barberos están ocupados)
+    takenSlots = [];
+    slots.forEach(s => {
+      const aleOcupado = (citasOcupadas||[]).some(c => c.hora.substring(0,5)===s && c.barbero==='alejandro') ||
+        (bloqueosActivos||[]).some(b => (b.barbero==='alejandro'||b.barbero==='ambos') && b.hora_inicio.substring(0,5)<=s && s<b.hora_fin.substring(0,5));
+      const alvinOcupado = (citasOcupadas||[]).some(c => c.hora.substring(0,5)===s && c.barbero==='alvin') ||
+        (bloqueosActivos||[]).some(b => (b.barbero==='alvin'||b.barbero==='ambos') && b.hora_inicio.substring(0,5)<=s && s<b.hora_fin.substring(0,5));
+      if(aleOcupado && alvinOcupado) takenSlots.push(s);
     });
   } catch(e) { takenSlots = []; }
 
+  document.getElementById('time-loading').style.display = 'none';
   renderTimes();
 }
 
@@ -1509,97 +1636,57 @@ function renderTimes() {
 function pickTime(t) { bTime = t; renderTimes(); }
 
 async function confirmBooking() {
-  const name = document.getElementById('f-name').value;
-  const tel = document.getElementById('f-tel').value;
-  const email = document.getElementById('f-email').value;
-  const notes = document.getElementById('f-notes').value;
+  if(!currentClient) { goStep('step-login'); return; }
 
-  if (!name || !email) {
-    alert('Por favor ingresa tu nombre y correo electrónico.');
-    return;
-  }
+  const notes = document.getElementById('f-notes').value;
+  const coupon = document.getElementById('f-coupon').value.toUpperCase().trim();
 
   const btn = document.querySelector('#step4 .modal-btn');
   btn.textContent = 'GUARDANDO...';
   btn.disabled = true;
 
   try {
-    // 1. Guardar o actualizar cliente
-    const { data: clienteData, error: clienteErr } = await _supabase
-      .from('clientes')
-      .upsert({ nombre: name, email: email, telefono: tel }, { onConflict: 'email' })
-      .select().single();
+    const fechaStr = bDate ? `${bDate.getFullYear()}-${String(bDate.getMonth()+1).padStart(2,'0')}-${String(bDate.getDate()).padStart(2,'0')}` : '';
 
-    // 2. Verificar que no haya conflicto de cita
-    const fechaStr = bDate ? bDate.toISOString().split('T')[0] : '';
-    const { data: conflicto } = await _supabase
-      .from('citas')
-      .select('id')
-      .eq('barbero', selectedBarber)
-      .eq('fecha', fechaStr)
-      .eq('hora', bTime + ':00')
-      .neq('estado', 'cancelada');
-
-    if (conflicto && conflicto.length > 0) {
+    // Verificar conflicto
+    const barberoKey = selectedBarber === 'Alejandro Castro' ? 'alejandro' : selectedBarber === 'Alvin Terán' ? 'alvin' : 'alvin';
+    const { data: conflicto } = await _supabase.from('citas').select('id')
+      .eq('barbero', barberoKey).eq('fecha', fechaStr).eq('hora', bTime+':00').neq('estado','cancelada');
+    if(conflicto && conflicto.length > 0) {
       alert('⚠️ Esa hora ya fue tomada. Por favor elige otra.');
-      btn.textContent = 'CONFIRMAR CITA';
-      btn.disabled = false;
-      goStep(3);
-      return;
+      btn.textContent = 'CONFIRMAR CITA'; btn.disabled = false;
+      goStep('step3'); return;
     }
 
-    // 3. Guardar cita
-    const precios = {
-      'Corte Jordaan': 12000,
-      'Corte y Barba Herengracht': 17000,
-      'Barba Van Gogh': 9000,
-      'Alisett': 15000
-    };
+    const precios = {'Corte Jordaan':12000,'Corte y Barba Herengracht':17000,'Barba Van Gogh':9000,'Alisett':15000};
 
     await _supabase.from('citas').insert({
-      cliente_id: clienteData?.id || null,
-      cliente_nombre: name,
-      cliente_tel: tel,
+      cliente_id: currentClient.id,
+      cliente_nombre: currentClient.nombre,
+      cliente_tel: currentClient.telefono,
       servicio: selectedService,
-      barbero: selectedBarber,
+      barbero: barberoKey,
       fecha: fechaStr,
-      hora: bTime + ':00',
+      hora: bTime+':00',
       estado: 'pendiente',
       notas: notes,
       precio: precios[selectedService] || 12000
     });
 
-    // 4. Enviar correo de confirmación
-    await _supabase.functions.invoke('citas', {
-      body: {
-        tipo: 'confirmacion',
-        data: {
-          nombre: name,
-          email: email,
-          servicio: selectedService,
-          barbero: selectedBarber,
-          fecha: fechaStr,
-          hora: bTime,
-          precio: '₡' + (precios[selectedService] || 12000).toLocaleString()
-        }
-      }
-    });
+    // Actualizar sesión guardada
+    localStorage.setItem('amsterdam_client', JSON.stringify(currentClient));
 
-    // 5. Mostrar confirmación
-    document.getElementById('conf-client-name').textContent = `Nos vemos pronto, ${name.split(' ')[0]}`;
-    document.getElementById('conf-svc').textContent = selectedService || 'Corte Jordaan';
-    document.getElementById('conf-barber').textContent = selectedBarber || 'Barbero asignado';
+    // Pantalla de confirmación
     const dayN = bDate ? ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][bDate.getDay()]+' '+bDate.getDate()+' · '+bTime : 'Por confirmar';
+    document.getElementById('conf-client-name').textContent = `Nos vemos pronto, ${currentClient.nombre.split(' ')[0]}`;
+    document.getElementById('conf-svc').textContent = selectedService;
+    document.getElementById('conf-barber').textContent = selectedBarber;
     document.getElementById('conf-dt').textContent = dayN;
-    goStep(5);
+    goStep('step5');
 
   } catch(err) {
     console.error(err);
-    // Igual mostrar confirmación aunque falle la conexión
-    document.getElementById('conf-client-name').textContent = `Nos vemos pronto, ${name.split(' ')[0]}`;
-    document.getElementById('conf-svc').textContent = selectedService || 'Corte Jordaan';
-    document.getElementById('conf-barber').textContent = selectedBarber || 'Barbero asignado';
-    goStep(5);
+    goStep('step5');
   } finally {
     btn.textContent = 'CONFIRMAR CITA';
     btn.disabled = false;
