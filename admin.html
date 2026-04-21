@@ -411,6 +411,7 @@ body{background:var(--black);color:var(--white);font-family:'Montserrat',sans-se
           <div class="topbar-title" id="tab-title">Agenda <em>del Día</em></div>
         </div>
         <div class="topbar-date" id="topbar-date"></div>
+        <button onclick="loadData()" style="background:none;border:1px solid var(--border2);color:var(--white-dim);padding:8px 16px;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border-radius:1px;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--white-dim)'">↻ Actualizar</button>
       </div>
 
       <div class="content">
@@ -799,7 +800,7 @@ function renderWeekView() {
   hours.forEach(h => {
     html += `<div class="time-label">${h}</div>`;
     weekDays.forEach(d => {
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = getLocalDateStr(d);
       const appt = appointments.find(a => a.date===dateStr && a.time===h);
       const blocked = blocks.find(b => b.date===dateStr && b.start<=h && h<b.end);
       if(blocked) {
@@ -853,15 +854,22 @@ function filterAppts(f, btn) {
 }
 
 async function confirmAppt(id) {
-  await _supabase.from('citas').update({ estado: 'confirmada' }).eq('id', id);
-  const a = appointments.find(x => x.id===id);
-  if(a) { a.status='confirmada'; renderAppts('todas'); renderDayView(); }
+  const { error } = await _supabase.from('citas').update({ estado: 'confirmada' }).eq('id', id);
+  if(!error) {
+    await loadData();
+  } else {
+    alert('Error al confirmar: ' + error.message);
+  }
 }
+
 async function cancelAppt(id) {
-  if(confirm('¿Cancelar esta cita?')) {
-    await _supabase.from('citas').update({ estado: 'cancelada' }).eq('id', id);
-    appointments = appointments.filter(x => x.id!==id);
-    renderAppts('todas'); renderDayView();
+  if(confirm('¿Eliminar esta cita?')) {
+    const { error } = await _supabase.from('citas').delete().eq('id', id);
+    if(!error) {
+      await loadData();
+    } else {
+      alert('Error al eliminar: ' + error.message);
+    }
   }
 }
 
@@ -964,6 +972,9 @@ function showApptDetail(id) {
 // Update agenda label
 document.getElementById('agenda-day-label').textContent =
   `${dayNames[new Date().getDay()]} ${new Date().getDate()} de ${months[new Date().getMonth()]}`;
+
+// Auto-refresh cada 30 segundos
+setInterval(() => { loadData(); }, 30000);
 </script>
 </body>
 </html>
