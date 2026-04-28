@@ -1150,22 +1150,16 @@ function filterAppts(f, btn) {
 }
 
 async function confirmAppt(id) {
+  if(!id || id === 'null' || id === 'undefined') { alert('Error: ID de cita no válido'); return; }
   const { error } = await _supabase.from('citas').update({ estado: 'confirmada' }).eq('id', id);
-  if(!error) {
-    await loadData();
-  } else {
-    alert('Error al confirmar: ' + error.message);
-  }
+  if(!error) { await loadData(); } else { alert('Error al confirmar: ' + error.message); }
 }
 
 async function cancelAppt(id) {
+  if(!id || id === 'null' || id === 'undefined') { alert('Error: ID de cita no válido'); return; }
   if(confirm('¿Eliminar esta cita?')) {
     const { error } = await _supabase.from('citas').delete().eq('id', id);
-    if(!error) {
-      await loadData();
-    } else {
-      alert('Error al eliminar: ' + error.message);
-    }
+    if(!error) { await loadData(); } else { alert('Error al eliminar: ' + error.message); }
   }
 }
 
