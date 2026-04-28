@@ -345,6 +345,16 @@ body{background:var(--black);color:var(--white);font-family:'Montserrat',sans-se
 ::-webkit-scrollbar-thumb{background:var(--border2);}
 ::-webkit-scrollbar-thumb:hover{background:var(--gold);}
 
+/* ── POPUP MENU ── */
+.popup-item{
+  padding:11px 18px;font-size:12px;letter-spacing:1px;
+  cursor:pointer;transition:background 0.15s;color:var(--white);
+  display:flex;align-items:center;gap:10px;
+}
+.popup-item:hover{background:var(--white-faint);}
+.popup-item.danger{color:var(--red);}
+.popup-item.danger:hover{background:rgba(201,76,76,0.08);}
+
 /* ── CLIENT CARDS ── */
 .client-card{
   background:var(--card);border:1px solid var(--border);
@@ -626,8 +636,21 @@ body{background:var(--black);color:var(--white);font-family:'Montserrat',sans-se
       <div class="modal-head-title">Agregar Cita</div>
     </div>
     <div class="modal-body">
-      <div class="form-field"><label>Nombre del cliente</label><input type="text" id="new-client" placeholder="Carlos Rodríguez"></div>
-      <div class="form-field"><label>Teléfono / WhatsApp</label><input type="tel" id="new-tel" placeholder="+506 8888-0000"></div>
+      <div class="form-field" style="position:relative;">
+        <label>Buscar cliente</label>
+        <input type="text" id="new-client-search" placeholder="Escribe el nombre..."
+          autocomplete="off"
+          oninput="buscarClienteModal(this.value)"
+          style="width:100%;background:var(--deep);border:1px solid var(--border);padding:13px 16px;color:var(--white);font-family:'Montserrat',sans-serif;font-size:13px;outline:none;border-radius:1px;transition:border-color 0.2s;"
+          onfocus="this.style.borderColor='var(--gold)'" onblur="setTimeout(()=>cerrarSugerencias(),200)">
+        <div id="client-suggestions" style="
+          display:none;position:absolute;top:100%;left:0;right:0;
+          background:var(--card2);border:1px solid var(--gold);
+          border-top:none;z-index:999;max-height:220px;overflow-y:auto;
+        "></div>
+      </div>
+      <div class="form-field"><label>Nombre del cliente</label><input type="text" id="new-client" placeholder="Se llena automático" style="background:var(--card2);"></div>
+      <div class="form-field"><label>Teléfono / WhatsApp</label><input type="tel" id="new-tel" placeholder="Se llena automático" style="background:var(--card2);"></div>
       <div class="form-field">
         <label>Servicio</label>
         <select id="new-service">
@@ -663,7 +686,106 @@ body{background:var(--black);color:var(--white);font-family:'Montserrat',sans-se
   </div>
 </div>
 
-<!-- ═══ MODAL EDITAR CITA ═══ -->
+<!-- ═══ POPUP MENU CITA (estilo Bewe) ═══ -->
+<div id="appt-popup" style="
+  display:none;position:fixed;z-index:3000;
+  background:var(--deep);border:1px solid var(--border2);
+  min-width:240px;box-shadow:0 8px 32px rgba(0,0,0,0.6);
+  border-radius:2px;overflow:hidden;
+">
+  <div id="appt-popup-header" style="
+    padding:14px 18px;border-bottom:1px solid var(--border);
+    background:var(--card2);
+  ">
+    <div id="popup-client-name" style="font-size:14px;font-weight:500;color:var(--white);margin-bottom:2px;"></div>
+    <div id="popup-appt-detail" style="font-size:11px;color:var(--white-dim);letter-spacing:0.5px;"></div>
+  </div>
+  <div style="padding:6px 0;">
+    <div class="popup-item" onclick="popupConfirmar()">✓ Confirmar cita</div>
+    <div class="popup-item" onclick="popupEditar()">✎ Editar cita</div>
+    <div class="popup-item" onclick="popupCambiarDia()">📅 Cambiar de día</div>
+    <div class="popup-item" onclick="popupAgregarNota()">📝 Agregar anotación</div>
+    <div class="popup-item" onclick="popupWhatsApp()">💬 Enviar WhatsApp</div>
+    <div class="popup-item" onclick="popupRecurrente()">🔁 Agendar recurrente</div>
+    <div class="popup-item danger" onclick="popupCancelar()">✕ Cancelar cita</div>
+  </div>
+</div>
+
+<!-- ═══ MODAL CITA RECURRENTE ═══ -->
+<div class="modal-overlay" id="modal-recurrente">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('modal-recurrente').classList.remove('open')">✕</button>
+    <div class="modal-head">
+      <div class="modal-head-label">Citas Recurrentes</div>
+      <div class="modal-head-title">Agendar serie</div>
+    </div>
+    <div class="modal-body">
+      <div id="recurrente-info" style="background:var(--card2);border:1px solid var(--border);padding:14px;margin-bottom:20px;font-size:13px;color:var(--white-dim);"></div>
+      <div class="form-field">
+        <label>Repetir cada</label>
+        <select id="rec-frecuencia">
+          <option value="7">Semana (cada 7 días)</option>
+          <option value="14">2 semanas (cada 14 días)</option>
+          <option value="30">Mes (cada 30 días)</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Hasta cuándo</label>
+        <input type="date" id="rec-hasta">
+      </div>
+      <div id="rec-preview" style="margin:16px 0;font-size:12px;color:var(--white-dim);line-height:2;"></div>
+      <button class="modal-btn" onclick="guardarRecurrente()">CREAR CITAS RECURRENTES</button>
+      <button class="modal-btn-ghost" onclick="document.getElementById('modal-recurrente').classList.remove('open')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL CAMBIAR DÍA ═══ -->
+<div class="modal-overlay" id="modal-cambiar-dia">
+  <div class="modal" style="max-width:380px;">
+    <button class="modal-close" onclick="document.getElementById('modal-cambiar-dia').classList.remove('open')">✕</button>
+    <div class="modal-head">
+      <div class="modal-head-label">Mover Cita</div>
+      <div class="modal-head-title">Cambiar de día</div>
+    </div>
+    <div class="modal-body">
+      <div class="form-field"><label>Nueva fecha</label><input type="date" id="nueva-fecha-cita"></div>
+      <div class="form-field">
+        <label>Nueva hora</label>
+        <select id="nueva-hora-cita">
+          <option>10:00</option><option>10:30</option><option>11:00</option>
+          <option>11:30</option><option>12:00</option><option>12:30</option>
+          <option>13:00</option><option>14:00</option><option>14:30</option>
+          <option>15:00</option><option>15:30</option><option>16:00</option>
+          <option>16:30</option><option>17:00</option><option>17:30</option>
+          <option>18:00</option><option>18:30</option><option>19:00</option>
+          <option>19:30</option>
+        </select>
+      </div>
+      <button class="modal-btn" onclick="guardarCambioDia()">GUARDAR CAMBIO</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL ANOTACIÓN ═══ -->
+<div class="modal-overlay" id="modal-nota">
+  <div class="modal" style="max-width:380px;">
+    <button class="modal-close" onclick="document.getElementById('modal-nota').classList.remove('open')">✕</button>
+    <div class="modal-head">
+      <div class="modal-head-label">Anotación</div>
+      <div class="modal-head-title">Solo la ves tú</div>
+    </div>
+    <div class="modal-body">
+      <div class="form-field">
+        <label>Nota interna</label>
+        <textarea id="nota-texto" rows="4" style="width:100%;background:var(--deep);border:1px solid var(--border);padding:13px 16px;color:var(--white);font-family:'Montserrat',sans-serif;font-size:13px;outline:none;resize:none;border-radius:1px;" placeholder="Ej: Cliente prefiere fade bajo, tiene alergia a..."></textarea>
+      </div>
+      <button class="modal-btn" onclick="guardarNota()">GUARDAR NOTA</button>
+    </div>
+  </div>
+</div>
+
+
 <div class="modal-overlay" id="modal-edit">
   <div class="modal">
     <button class="modal-close" onclick="closeEditModal()">✕</button>
@@ -927,7 +1049,7 @@ function renderDayView() {
       html += `<div class="time-slot-cell blocked"><div class="block-indicator">⊘ ${aleBlocked.reason||'Bloqueado'}</div></div>`;
     } else if(aleAppt) {
       html += `<div class="time-slot-cell">
-        <div class="appt-block alejandro" onclick="showApptDetail(${aleAppt.id})">
+        <div class="appt-block alejandro" onclick="abrirMenuCita(event,'${aleAppt.id}')">
           <div class="appt-name">${aleAppt.client}</div>
           <div class="appt-service">${aleAppt.service.split(' ')[0]}</div>
         </div></div>`;
@@ -940,7 +1062,7 @@ function renderDayView() {
       html += `<div class="time-slot-cell blocked"><div class="block-indicator">⊘ ${alvinBlocked.reason||'Bloqueado'}</div></div>`;
     } else if(alvinAppt) {
       html += `<div class="time-slot-cell">
-        <div class="appt-block alvin" onclick="showApptDetail(${alvinAppt.id})">
+        <div class="appt-block alvin" onclick="abrirMenuCita(event,'${alvinAppt.id}')">
           <div class="appt-name">${alvinAppt.client}</div>
           <div class="appt-service">${alvinAppt.service.split(' ')[0]}</div>
         </div></div>`;
@@ -1095,6 +1217,10 @@ async function removeBlock(id) {
 // ── NEW APPOINTMENT ──
 function openNewAppt() {
   document.getElementById('modal-new').classList.add('open');
+  document.getElementById('new-client-search').value = '';
+  document.getElementById('new-client').value = '';
+  document.getElementById('new-tel').value = '';
+  cargarClientesCache();
 }
 function closeModal() {
   document.getElementById('modal-new').classList.remove('open');
@@ -1103,6 +1229,10 @@ function quickAdd(barber, time, date) {
   document.getElementById('new-barber').value = barber;
   document.getElementById('new-time').value = time;
   document.getElementById('new-date').value = date;
+  document.getElementById('new-client-search').value = '';
+  document.getElementById('new-client').value = '';
+  document.getElementById('new-tel').value = '';
+  cargarClientesCache();
   openNewAppt();
 }
 async function saveNewAppt() {
@@ -1138,8 +1268,201 @@ async function saveNewAppt() {
 }
 
 function showApptDetail(id) {
-  openEditAppt(id);
+  abrirMenuCita(null, id);
 }
+
+// ── POPUP MENÚ BEWE-STYLE ──
+let popupApptId = null;
+
+function abrirMenuCita(event, id) {
+  if(event) event.stopPropagation();
+  popupApptId = id;
+  const a = appointments.find(x => x.id == id);
+  if(!a) return;
+
+  const popup = document.getElementById('appt-popup');
+  document.getElementById('popup-client-name').textContent = a.client;
+  document.getElementById('popup-appt-detail').textContent =
+    `${a.service} · ${a.time} · ${a.barber==='alejandro'?'Alejandro':'Alvin'}`;
+
+  // Position near click or center
+  if(event) {
+    popup.style.left = Math.min(event.clientX, window.innerWidth-260) + 'px';
+    popup.style.top = Math.min(event.clientY, window.innerHeight-320) + 'px';
+  } else {
+    popup.style.left = '50%';
+    popup.style.top = '50%';
+    popup.style.transform = 'translate(-50%,-50%)';
+  }
+  popup.style.display = 'block';
+}
+
+function cerrarPopup() {
+  document.getElementById('appt-popup').style.display = 'none';
+  popupApptId = null;
+}
+
+document.addEventListener('click', (e) => {
+  const popup = document.getElementById('appt-popup');
+  if(popup && !popup.contains(e.target)) cerrarPopup();
+});
+
+async function popupConfirmar() {
+  if(!popupApptId) return;
+  cerrarPopup();
+  await confirmAppt(popupApptId);
+}
+
+function popupEditar() {
+  if(!popupApptId) return;
+  cerrarPopup();
+  openEditAppt(popupApptId);
+}
+
+function popupCambiarDia() {
+  if(!popupApptId) return;
+  cerrarPopup();
+  const a = appointments.find(x => x.id == popupApptId);
+  if(!a) return;
+  document.getElementById('nueva-fecha-cita').value = a.date;
+  document.getElementById('nueva-hora-cita').value = a.time;
+  document.getElementById('modal-cambiar-dia').classList.add('open');
+}
+
+async function guardarCambioDia() {
+  if(!popupApptId) return;
+  const fecha = document.getElementById('nueva-fecha-cita').value;
+  const hora = document.getElementById('nueva-hora-cita').value;
+  const { error } = await _supabase.from('citas').update({
+    fecha: fecha, hora: hora+':00'
+  }).eq('id', popupApptId);
+  if(!error) {
+    document.getElementById('modal-cambiar-dia').classList.remove('open');
+    await loadData();
+  } else alert('Error: ' + error.message);
+}
+
+function popupAgregarNota() {
+  if(!popupApptId) return;
+  cerrarPopup();
+  const a = appointments.find(x => x.id == popupApptId);
+  document.getElementById('nota-texto').value = a?.notas || '';
+  document.getElementById('modal-nota').classList.add('open');
+}
+
+async function guardarNota() {
+  const nota = document.getElementById('nota-texto').value;
+  const { error } = await _supabase.from('citas').update({ notas: nota }).eq('id', popupApptId);
+  if(!error) {
+    document.getElementById('modal-nota').classList.remove('open');
+    await loadData();
+  } else alert('Error: ' + error.message);
+}
+
+function popupWhatsApp() {
+  if(!popupApptId) return;
+  const a = appointments.find(x => x.id == popupApptId);
+  if(!a || !a.tel) { alert('Este cliente no tiene teléfono registrado'); return; }
+  const msg = encodeURIComponent(`Hola ${a.client}, le recordamos su cita en Barbería Ámsterdam:\n✦ ${a.service}\n📅 ${a.date} a las ${a.time}\nNos vemos pronto.`);
+  window.open('https://wa.me/' + a.tel.replace(/\D/g,'') + '?text=' + msg, '_blank');
+  cerrarPopup();
+}
+
+async function popupCancelar() {
+  if(!popupApptId) return;
+  cerrarPopup();
+  await cancelAppt(popupApptId);
+}
+
+// ── CITAS RECURRENTES ──
+function popupRecurrente() {
+  if(!popupApptId) return;
+  cerrarPopup();
+  const a = appointments.find(x => x.id == popupApptId);
+  if(!a) return;
+
+  document.getElementById('recurrente-info').innerHTML =
+    `<strong style="color:var(--white)">${a.client}</strong><br>
+    ${a.service} · ${a.barber==='alejandro'?'Alejandro':'Alvin'}<br>
+    Comenzando el ${a.date} a las ${a.time}`;
+
+  // Default hasta fin de año
+  const finAno = new Date().getFullYear() + '-12-31';
+  document.getElementById('rec-hasta').value = finAno;
+  document.getElementById('modal-recurrente').classList.add('open');
+  previsualizarRecurrente();
+}
+
+function previsualizarRecurrente() {
+  const a = appointments.find(x => x.id == popupApptId);
+  if(!a) return;
+  const freq = parseInt(document.getElementById('rec-frecuencia').value);
+  const hasta = document.getElementById('rec-hasta').value;
+  if(!hasta) return;
+
+  const fechas = [];
+  let current = new Date(a.date);
+  current.setDate(current.getDate() + freq);
+  const limite = new Date(hasta);
+
+  while(current <= limite && fechas.length < 52) {
+    fechas.push(getLocalDateStr(current));
+    current.setDate(current.getDate() + freq);
+  }
+
+  document.getElementById('rec-preview').innerHTML =
+    `<strong style="color:var(--gold)">${fechas.length} citas</strong> se crearán:<br>` +
+    fechas.slice(0,5).map(f => `✦ ${f} · ${a.time}`).join('<br>') +
+    (fechas.length > 5 ? `<br>... y ${fechas.length-5} más` : '');
+
+  return fechas;
+}
+
+document.addEventListener('change', (e) => {
+  if(e.target.id === 'rec-frecuencia' || e.target.id === 'rec-hasta') {
+    previsualizarRecurrente();
+  }
+});
+
+async function guardarRecurrente() {
+  const a = appointments.find(x => x.id == popupApptId);
+  if(!a) return;
+
+  const fechas = previsualizarRecurrente();
+  if(!fechas || !fechas.length) { alert('No hay fechas para crear'); return; }
+
+  const btn = document.querySelector('#modal-recurrente .modal-btn');
+  btn.textContent = 'CREANDO...';
+  btn.disabled = true;
+
+  const prices = {'Corte Jordaan':12000,'Corte y Barba Herengracht':17000,'Barba Van Gogh':9000,'Alisett':15000};
+
+  const inserts = fechas.map(fecha => ({
+    cliente_nombre: a.client,
+    cliente_tel: a.tel || null,
+    servicio: a.service,
+    barbero: a.barber,
+    fecha: fecha,
+    hora: a.time + ':00',
+    estado: 'pendiente',
+    precio: prices[a.service] || 12000
+  }));
+
+  const { error } = await _supabase.from('citas').insert(inserts);
+
+  btn.textContent = 'CREAR CITAS RECURRENTES';
+  btn.disabled = false;
+
+  if(!error) {
+    document.getElementById('modal-recurrente').classList.remove('open');
+    await loadData();
+    alert(`✅ ${fechas.length} citas creadas exitosamente`);
+  } else {
+    alert('Error: ' + error.message);
+  }
+}
+
+
 
 // ── EDIT APPOINTMENT ──
 function openEditAppt(id) {
@@ -1331,6 +1654,52 @@ async function openProfile(clientId) {
 
 function closeProfileModal() {
   document.getElementById('modal-profile').classList.remove('open');
+}
+
+// ── AUTOCOMPLETE CLIENTES EN MODAL ──
+let clientesCache = [];
+
+async function cargarClientesCache() {
+  if(clientesCache.length > 0) return;
+  const { data } = await _supabase
+    .from('clientes')
+    .select('id, nombre, telefono, email')
+    .order('nombre', { ascending: true });
+  clientesCache = data || [];
+}
+
+function buscarClienteModal(query) {
+  const box = document.getElementById('client-suggestions');
+  if(!query || query.length < 2) { box.style.display = 'none'; return; }
+
+  const q = query.toLowerCase();
+  const matches = clientesCache
+    .filter(c => c.nombre && c.nombre.toLowerCase().includes(q))
+    .slice(0, 8);
+
+  if(!matches.length) { box.style.display = 'none'; return; }
+
+  box.style.display = 'block';
+  box.innerHTML = matches.map(c => `
+    <div onclick="seleccionarCliente('${c.id}', '${(c.nombre||'').replace(/'/g,"\\'")}', '${(c.telefono||'').replace(/'/g,"\\'")}', '${(c.email||'').replace(/'/g,"\\'")}' )"
+      style="padding:10px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.15s;"
+      onmouseover="this.style.background='var(--gold-dim)'" onmouseout="this.style.background='none'">
+      <div style="font-size:13px;font-weight:500;color:var(--white)">${c.nombre}</div>
+      <div style="font-size:11px;color:var(--white-dim)">${c.telefono||'Sin teléfono'} ${c.email ? '· '+c.email : ''}</div>
+    </div>
+  `).join('');
+}
+
+function seleccionarCliente(id, nombre, tel, email) {
+  document.getElementById('new-client-search').value = nombre;
+  document.getElementById('new-client').value = nombre;
+  document.getElementById('new-tel').value = tel;
+  document.getElementById('client-suggestions').style.display = 'none';
+}
+
+function cerrarSugerencias() {
+  const box = document.getElementById('client-suggestions');
+  if(box) box.style.display = 'none';
 }
 
 // Update agenda label
